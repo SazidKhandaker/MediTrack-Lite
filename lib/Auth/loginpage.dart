@@ -17,9 +17,13 @@ class _LoginPageState extends State<LoginPage>
     super.initState();
   }
 
+
   @override
+  bool isChecked = false;
   Widget build(BuildContext context) {
+
     return Scaffold(
+
       // 🔥 Bottom floating area
       bottomNavigationBar: Container(
         height: 100,
@@ -175,8 +179,13 @@ class _LoginPageState extends State<LoginPage>
           const Spacer(),
 
           Row(
-            children: const [
-              Checkbox(value: false, onChanged: null),
+            children:  [
+              Checkbox(value: isChecked, onChanged: (value){
+                  setState(() {
+                    isChecked = value!;
+                  });
+              }),
+
               Text("I agree to Terms",
                   style: TextStyle(color: Colors.white70)),
             ],
@@ -220,4 +229,5 @@ class _LoginPageState extends State<LoginPage>
       ),
     );
   }
+
 }
