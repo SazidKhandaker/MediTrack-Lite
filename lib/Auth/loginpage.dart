@@ -20,35 +20,63 @@ class _LoginPageState extends State<LoginPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // 🔥 Bottom floating area
       bottomNavigationBar: Container(
-        height: 150,
-        width: double.infinity,
+        height: 100,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [   Color(0xFF0F4C5C), Color(0xFF1B6B73)],
+            colors: [Color(0xFF0F4C5C), Color(0xFF1B6B73)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
-      child:Row(
-        children: [ const Text("Forgot Password?",
-            style: TextStyle(color: Colors.white70)),
-        FloatingActionButton(onPressed: (){})
-        ],
-      ) ,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // 🔹 Forgot password text
+            Positioned(
+              left: 20,
+              bottom: 50,
+              child: Text(
+                "Forgot Password?",
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
 
+            // 🔥 Floating button
+            Positioned(
+              bottom: 65,
+              right: 20,
+              child: Container(
+                height: 65,
+                width: 65,
+                decoration: BoxDecoration(
+                  color: Color(0xFFD4AF7A),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      offset: Offset(0, 5),
+                    )
+                  ],
+                ),
+                child: Icon(Icons.arrow_forward),
+              ),
+            ),
+          ],
+        ),
       ),
 
-
-
-
-
+      // 🔹 Main body
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [   Color(0xFF2F9E5B),
-              Color(0xFF2E8B57),],
+            colors: [
+              Color(0xFF2F9E5B),
+              Color(0xFF2E8B57),
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -58,7 +86,7 @@ class _LoginPageState extends State<LoginPage>
             children: [
               const SizedBox(height: 20),
 
-              // Tabs
+              // 🔹 Tabs
               TabBar(
                 controller: _tabController,
                 indicatorColor: Colors.white,
@@ -114,12 +142,6 @@ class _LoginPageState extends State<LoginPage>
           _socialButton("Log in with Facebook"),
 
           const Spacer(),
-
-
-
-          const SizedBox(height: 20),
-
-          // _nextButton(),
         ],
       ),
     );
@@ -161,8 +183,6 @@ class _LoginPageState extends State<LoginPage>
           ),
 
           const SizedBox(height: 10),
-
-          // _nextButton(),
         ],
       ),
     );
@@ -200,18 +220,4 @@ class _LoginPageState extends State<LoginPage>
       ),
     );
   }
-
-  // 🔹 Next Button
-  // Widget _nextButton() {
-  //   return Align(
-  //     alignment: Alignment.bottomRight,
-  //     child: Container(
-  //       padding: const EdgeInsets.all(15),
-  //       decoration: const BoxDecoration(
-  //         color: Color(0xFFD4AF7A),
-  //         shape: BoxShape.circle,
-  //       ),
-  //       child: const Icon(Icons.arrow_forward),
-  //     ),
-  //   );
-  }
+}
