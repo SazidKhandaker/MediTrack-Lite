@@ -11,33 +11,73 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  bool isChecked = false;
+
+  // 🔥 Controllers
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
   @override
   void initState() {
     _tabController = TabController(length: 2, vsync: this);
     super.initState();
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  // 🔥 Snackbar function
+  void showSnack(String message, {Color color = Colors.red}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(10),
+      ),
+    );
+  }
+
+  // 🔥 Validation
+  void validateAndLogin() {
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      showSnack("Required Field are empty");
+      return;
+    }
+
+    if (!email.contains("@gmail.com") && !email.contains("@yahoo.com")) {
+      showSnack("Invalid EMail");
+      return;
+    }
+
+    showSnack("Login successful ✅", color: Colors.green);
+  }
 
   @override
-  bool isChecked = false;
   Widget build(BuildContext context) {
-
     return Scaffold(
+      resizeToAvoidBottomInset: true,
 
-      // 🔥 Bottom floating area
+      // 🔻 Bottom bar
       bottomNavigationBar: Container(
         height: 100,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF0F4C5C), Color(0xFF1B6B73)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
           ),
         ),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // 🔹 Forgot password text
             Positioned(
               left: 20,
               bottom: 50,
@@ -46,51 +86,47 @@ class _LoginPageState extends State<LoginPage>
                 style: TextStyle(color: Colors.white70),
               ),
             ),
-
-            // 🔥 Floating button
             Positioned(
               bottom: 65,
               right: 20,
-              child: Container(
-                height: 65,
-                width: 65,
-                decoration: BoxDecoration(
-                  color: Color(0xFFD4AF7A),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: Offset(0, 5),
-                    )
-                  ],
+              child: GestureDetector(
+                onTap: () {
+                  validateAndLogin();
+                },
+                child: Container(
+                  height: 65,
+                  width: 65,
+                  decoration: BoxDecoration(
+                    color: Color(0xFFD4AF7A),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        offset: Offset(0, 5),
+                      )
+                    ],
+                  ),
+                  child: Icon(Icons.arrow_forward),
                 ),
-                child: Icon(Icons.arrow_forward),
               ),
             ),
           ],
         ),
       ),
 
-      // 🔹 Main body
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF2F9E5B),
-              Color(0xFF2E8B57),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: SafeArea(
+        child: Container(
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF2F9E5B), Color(0xFF2E8B57)],
+            ),
           ),
-        ),
-        child: SafeArea(
           child: Column(
             children: [
               const SizedBox(height: 20),
 
-              // 🔹 Tabs
               TabBar(
                 controller: _tabController,
                 indicatorColor: Colors.white,
@@ -102,8 +138,6 @@ class _LoginPageState extends State<LoginPage>
                 ],
               ),
 
-              const SizedBox(height: 20),
-
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
@@ -112,7 +146,7 @@ class _LoginPageState extends State<LoginPage>
                     _buildSignup(),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -122,84 +156,100 @@ class _LoginPageState extends State<LoginPage>
 
   // 🔹 Login UI
   Widget _buildLogin() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          const Icon(Icons.person, color: Colors.white, size: 60),
-          const SizedBox(height: 10),
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const Icon(Icons.person, color: Colors.white, size: 60),
+            const SizedBox(height: 10),
 
-          const Text(
-            "Log In to Account",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
+            const Text(
+              "Log In to Account",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
 
-          const SizedBox(height: 30),
+            const SizedBox(height: 30),
 
-          _textField("Email"),
-          const SizedBox(height: 15),
-          _textField("Password", isPassword: true),
+            _textField("Email", controller: emailController),
+            const SizedBox(height: 15),
+            _textField("Password",
+                isPassword: true, controller: passwordController),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-          _socialButton("Log in with Google"),
-          _socialButton("Log in with Facebook"),
+            _socialButton("Log in with Google"),
+            _socialButton("Log in with Facebook"),
 
-          const Spacer(),
-        ],
+            const SizedBox(height: 80),
+          ],
+        ),
       ),
     );
   }
 
   // 🔹 Signup UI
   Widget _buildSignup() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          const Icon(Icons.person_add, color: Colors.white, size: 60),
-          const SizedBox(height: 10),
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const Icon(Icons.person_add, color: Colors.white, size: 60),
+            const SizedBox(height: 10),
 
-          const Text(
-            "Create an Account",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
+            const Text(
+              "Create an Account",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
 
-          const SizedBox(height: 30),
+            const SizedBox(height: 30),
 
-          _textField("Email"),
-          const SizedBox(height: 15),
-          _textField("Password", isPassword: true),
+            _textField("Email", controller: emailController),
+            const SizedBox(height: 15),
+            _textField("Password",
+                isPassword: true, controller: passwordController),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-          _socialButton("Sign up with Google"),
-          _socialButton("Sign up with Facebook"),
+            _socialButton("Sign up with Google"),
+            _socialButton("Sign up with Facebook"),
 
-          const Spacer(),
+            const SizedBox(height: 20),
 
-          Row(
-            children:  [
-              Checkbox(value: isChecked, onChanged: (value){
-                  setState(() {
-                    isChecked = value!;
-                  });
-              }),
+            Row(
+              children: [
+                Checkbox(
+                  value: isChecked,
+                  onChanged: (value) {
+                    setState(() {
+                      isChecked = value!;
+                    });
+                  },
+                ),
+                const Text("I agree to Terms",
+                    style: TextStyle(color: Colors.white70)),
+              ],
+            ),
 
-              Text("I agree to Terms",
-                  style: TextStyle(color: Colors.white70)),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-        ],
+            const SizedBox(height: 80),
+          ],
+        ),
       ),
     );
   }
 
   // 🔹 TextField
-  Widget _textField(String hint, {bool isPassword = false}) {
+  Widget _textField(String hint,
+      {bool isPassword = false, TextEditingController? controller}) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
@@ -229,5 +279,4 @@ class _LoginPageState extends State<LoginPage>
       ),
     );
   }
-
 }
