@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../Auth/loginpage.dart' show Loginpage;
+import '../Auth/loginpage.dart' show Loginpage, LoginPage;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen>
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) =>  Loginpage(),
+          builder: (context) =>  LoginPage(),
         ),
       );
 
