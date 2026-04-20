@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -45,21 +46,35 @@ class _LoginPageState extends State<LoginPage>
   }
 
   // 🔥 Validation
-  void validateAndLogin() {
+  Future<void> validateAndLogin() async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      showSnack("Required Field are empty");
+      showSnack("Required Fields are empty");
       return;
     }
 
     if (!email.contains("@gmail.com") && !email.contains("@yahoo.com")) {
-      showSnack("Invalid EMail");
+      showSnack("Invalid Email");
       return;
     }
 
-    showSnack("Login successful ✅", color: Colors.green);
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      showSnack("Login successful ✅", color: Colors.green);
+
+      // 👉 next screen e jao (optional)
+      // Navigator.pushReplacement(context,
+      //   MaterialPageRoute(builder: (_) => HomePage()));
+
+    } catch (e) {
+      showSnack("Login failed ❌");
+    }
   }
 
   @override
@@ -91,7 +106,7 @@ class _LoginPageState extends State<LoginPage>
               right: 20,
               child: GestureDetector(
                 onTap: () {
-                  validateAndLogin();
+                  validateAndLogin();;
                 },
                 child: Container(
                   height: 65,
