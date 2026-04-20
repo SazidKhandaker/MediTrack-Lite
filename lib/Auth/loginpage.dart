@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../homepage.dart' show Homepage;
+import '../homepage.dart' show Homepage, HomePage;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -69,7 +69,7 @@ class _LoginPageState extends State<LoginPage>
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const Homepage()),
+          MaterialPageRoute(builder: (_) => const HomePage()),
         );
       }
 
@@ -121,7 +121,7 @@ class _LoginPageState extends State<LoginPage>
       // 🔥 IMPORTANT
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const Homepage()),
+        MaterialPageRoute(builder: (_) => const HomePage()),
       );
 
     } on FirebaseAuthException catch (e) {
