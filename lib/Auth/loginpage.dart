@@ -16,6 +16,7 @@ class _LoginPageState extends State<LoginPage>
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final nameController= TextEditingController();
 
   @override
   void initState() {
@@ -228,18 +229,19 @@ class _LoginPageState extends State<LoginPage>
   // 🔹 SIGNUP UI
   Widget _buildSignup() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(15),
       child: Column(
         children: [
           const Icon(Icons.person_add, color: Colors.white, size: 60),
-          const SizedBox(height: 20),
-
+          const SizedBox(height: 10),
+          _textField("Name", controller: emailController),
+          SizedBox(height: 10,),
           _textField("Email", controller: emailController),
-          const SizedBox(height: 15),
+           SizedBox(height: 10),
           _textField("Password",
               isPassword: true, controller: passwordController),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
 
           // 🔥 ADDED
           _socialButton(
