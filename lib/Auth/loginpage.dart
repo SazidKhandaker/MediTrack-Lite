@@ -1,5 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import '../homepage.dart' show Homepage;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,7 +18,7 @@ class _LoginPageState extends State<LoginPage>
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final nameController= TextEditingController();
+  final nameController = TextEditingController();
 
   @override
   void initState() {
@@ -29,6 +31,7 @@ class _LoginPageState extends State<LoginPage>
     _tabController.dispose();
     emailController.dispose();
     passwordController.dispose();
+    nameController.dispose(); // 🔥 FIX
     super.dispose();
   }
 
@@ -61,18 +64,23 @@ class _LoginPageState extends State<LoginPage>
       );
 
       showSnack("Login successful ✅", color: Colors.green);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const Homepage()),
+      );
     } catch (e) {
       showSnack("Login failed ❌");
     }
   }
 
-  // 🆕 SIGNUP
+  // 🆕 SIGNUP + NAME SAVE
   Future<void> validateAndSignup() async {
+    String name = nameController.text.trim();
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      showSnack("Required Fields are empty");
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      showSnack("All fields required");
       return;
     }
 
@@ -82,14 +90,30 @@ class _LoginPageState extends State<LoginPage>
     }
 
     try {
+      UserCredential userCredential =
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
+      await userCredential.user!.updateDisplayName(name);
+
       showSnack("Signup successful ✅", color: Colors.green);
-    } catch (e) {
-      showSnack("Signup failed ❌");
+
+      // 🔥 IMPORTANT
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const Homepage()),
+      );
+
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        showSnack("Email already used");
+      } else if (e.code == 'weak-password') {
+        showSnack("Weak password");
+      } else {
+        showSnack(e.message ?? "Signup error");
+      }
     }
   }
 
@@ -208,7 +232,6 @@ class _LoginPageState extends State<LoginPage>
 
           const SizedBox(height: 20),
 
-          // 🔥 ADDED
           _socialButton(
             text: "Continue with Google",
             bgColor: Colors.white,
@@ -229,21 +252,24 @@ class _LoginPageState extends State<LoginPage>
   // 🔹 SIGNUP UI
   Widget _buildSignup() {
     return Padding(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.only(bottom: 8,left: 15,right: 15),
       child: Column(
         children: [
           const Icon(Icons.person_add, color: Colors.white, size: 60),
-          const SizedBox(height: 10),
-          _textField("Name", controller: emailController),
-          SizedBox(height: 10,),
+          const SizedBox(height: 8),
+
+          // 🔥 FIXED
+          _textField("Name", controller: nameController),
+
+          const SizedBox(height: 8),
           _textField("Email", controller: emailController),
-           SizedBox(height: 10),
+
+          const SizedBox(height: 8),
           _textField("Password",
               isPassword: true, controller: passwordController),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
-          // 🔥 ADDED
           _socialButton(
             text: "Sign up with Google",
             bgColor: Colors.white,
