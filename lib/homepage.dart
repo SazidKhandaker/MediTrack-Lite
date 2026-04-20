@@ -1,7 +1,14 @@
+// homepage.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:meditrack/bottomnavigation/profilepage.dart' show ProfilePage;
+import 'package:meditrack/bottomnavigation/calendar_page.dart' show CalendarPage;
 import 'medicinecard.dart';
+import 'calendar_page.dart';
+import 'add_page.dart';
+import 'list_page.dart';
+import 'profile_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,7 +27,6 @@ class _HomePageState extends State<HomePage> {
     fetchMedicine("paracetamol");
   }
 
-  // 🔥 API CALL
   Future<void> fetchMedicine(String name) async {
     final url =
         "https://api.fda.gov/drug/label.json?search=$name&limit=3";
@@ -35,12 +41,42 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // 🔥 NAVIGATION FUNCTION
+  void navigateTo(int index) {
+    Widget page;
+
+    switch (index) {
+      case 0:
+        page = const HomePage();
+        break;
+      case 1:
+        page = const CalendarPage();
+        break;
+      case 2:
+        page = const AddPage();
+        break;
+      case 3:
+        page = const ListPage();
+        break;
+      case 4:
+        page = const ProfilePage();
+        break;
+      default:
+        return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => page),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
 
-      // 🔥 Bottom Navigation
+      // 🔥 CLICKABLE NAV BAR
       bottomNavigationBar: Container(
         height: 80,
         decoration: BoxDecoration(
@@ -48,50 +84,68 @@ class _HomePageState extends State<HomePage> {
           borderRadius:
           const BorderRadius.vertical(top: Radius.circular(25)),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-            )
+            BoxShadow(color: Colors.black12, blurRadius: 10)
           ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Icon(Icons.grid_view, color: Colors.blue),
-            Icon(Icons.calendar_today, color: Colors.grey),
 
-            // ➕ CENTER BUTTON
-            Container(
-              height: 60,
-              width: 60,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF2E8B57),
-                    Color(0xFF4CAF50),
-                  ],
-                ),
-              ),
-              child:
-              const Icon(Icons.add, color: Colors.white, size: 30),
+            // HOME
+            GestureDetector(
+              onTap: () => navigateTo(0),
+              child: const Icon(Icons.grid_view, color: Colors.blue),
             ),
 
-            Icon(Icons.list_alt, color: Colors.grey),
-            Icon(Icons.person, color: Colors.grey),
+            // CALENDAR
+            GestureDetector(
+              onTap: () => navigateTo(1),
+              child: const Icon(Icons.calendar_today, color: Colors.grey),
+            ),
+
+            // ADD
+            GestureDetector(
+              onTap: () => navigateTo(2),
+              child: Container(
+                height: 60,
+                width: 60,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(0xFF2E8B57),
+                      Color(0xFF4CAF50),
+                    ],
+                  ),
+                ),
+                child: const Icon(Icons.add, color: Colors.white),
+              ),
+            ),
+
+            // LIST
+            GestureDetector(
+              onTap: () => navigateTo(3),
+              child: const Icon(Icons.list_alt, color: Colors.grey),
+            ),
+
+            // PROFILE
+            GestureDetector(
+              onTap: () => navigateTo(4),
+              child: const Icon(Icons.person, color: Colors.grey),
+            ),
           ],
         ),
       ),
 
       body: SafeArea(
-        child: SingleChildScrollView( // 🔥 FIXED
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                // 🔝 Header
+                // HEADER
                 Row(
                   mainAxisAlignment:
                   MainAxisAlignment.spaceBetween,
@@ -106,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.green.shade400,
+                        color: Colors.green,
                         borderRadius:
                         BorderRadius.circular(12),
                       ),
@@ -118,7 +172,7 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 20),
 
-                // 📅 Clickable Date
+                // DATE
                 SizedBox(
                   height: 80,
                   child: ListView.builder(
@@ -141,33 +195,17 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                const SizedBox(height: 10),
-
-                const Text(
-                  "Today",
-                  style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold),
-                ),
-
                 const SizedBox(height: 20),
 
-                // 🔥 API LIST FIXED
                 medicines.isEmpty
-                    ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 50),
-                    child:
-                    CircularProgressIndicator(),
-                  ),
-                )
+                    ? const Center(child: CircularProgressIndicator())
                     : ListView.builder(
-                  shrinkWrap: true, // 🔥 FIX
+                  shrinkWrap: true,
                   physics:
-                  const NeverScrollableScrollPhysics(), // 🔥 FIX
+                  const NeverScrollableScrollPhysics(),
                   itemCount: medicines.length,
                   itemBuilder: (context, index) {
-                    var item = medicines[index];
+                    var item = medicines[index;
 
                     String title =
                         item['openfda']?['brand_name']?[0] ??
@@ -191,7 +229,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // 📅 Date Widget
   Widget _dateItem(
       String day, String week, bool isSelected) {
     return Container(
