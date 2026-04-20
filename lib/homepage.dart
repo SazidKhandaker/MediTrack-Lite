@@ -1,45 +1,45 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-class HomePage extends StatelessWidget {
+import 'medicinecard.dart' show MedicineCard;
+
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int selectedIndex = 1;
+  List medicines = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMedicine("paracetamol");
+  }
+
+  // 🔥 API CALL
+  Future<void> fetchMedicine(String name) async {
+    final url =
+        "https://api.fda.gov/drug/label.json?search=$name&limit=3";
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        medicines = data['results'] ?? [];
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-
-      // 🔻 Bottom Navigation
-      bottomNavigationBar: Container(
-        height: 100,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-            )
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Icon(Icons.grid_view, color: Colors.blue),
-            Icon(Icons.calendar_today, color: Colors.grey),
-            Container(
-              height: 55,
-              width: 55,
-              decoration: const BoxDecoration(
-                color: Color(0xFF2E8B57),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.add, color: Colors.white),
-            ),
-            Icon(Icons.list_alt, color: Colors.grey),
-            Icon(Icons.person, color: Colors.grey),
-          ],
-        ),
-      ),
 
       body: SafeArea(
         child: Padding(
@@ -72,55 +72,58 @@ class HomePage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // 📅 Date Selector
+              // 📅 Clickable Date
               SizedBox(
                 height: 80,
-                child: ListView(
+                child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  children: [
-                    _dateItem("4", "Sat", false),
-                    _dateItem("5", "Sun", true),
-                    _dateItem("6", "Mon", false),
-                    _dateItem("7", "Tue", false),
-                    _dateItem("8", "Wed", false),
-                  ],
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedIndex = index;
+                        });
+                      },
+                      child: _dateItem(
+                        "${4 + index}",
+                        ["Sat", "Sun", "Mon", "Tue", "Wed"][index],
+                        selectedIndex == index,
+                      ),
+                    );
+                  },
                 ),
               ),
 
               const SizedBox(height: 10),
 
-              // 🔘 Tabs
-              Row(
-                children: const [
-                  Text("Today",
-                      style: TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold)),
-                  SizedBox(width: 20),
-                  Text("Week", style: TextStyle(color: Colors.grey)),
-                  SizedBox(width: 20),
-                  Text("Month", style: TextStyle(color: Colors.grey)),
-                ],
-              ),
+              const Text("Today",
+                  style: TextStyle(
+                      color: Colors.blue, fontWeight: FontWeight.bold)),
 
               const SizedBox(height: 20),
 
-              // 📋 Medicine List
+              // 🔥 API DATA LIST
               Expanded(
-                child: ListView(
-                  children: const [
-                    MedicineCard(
-                      title: "Paracetamol XL2",
-                      subtitle: "150mg, 1 capsule",
-                    ),
-                    MedicineCard(
-                      title: "DPP-4 inhibitors",
-                      subtitle: "150mg, 1 capsule",
-                    ),
-                    MedicineCard(
-                      title: "Meglitinides",
-                      subtitle: "150mg, 1 capsule",
-                    ),
-                  ],
+                child: medicines.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                  itemCount: medicines.length,
+                  itemBuilder: (context, index) {
+                    var item = medicines[index];
+
+                    String title =
+                        item['openfda']?['brand_name']?[0] ??
+                            "No Name";
+
+                    String desc =
+                        item['purpose']?[0] ?? "No Description";
+
+                    return MedicineCard(
+                      title: title,
+                      subtitle: desc,
+                    );
+                  },
                 ),
               )
             ],
@@ -151,77 +154,6 @@ class HomePage extends StatelessWidget {
                   color: isSelected ? Colors.white : Colors.grey)),
         ],
       ),
-    );
-  }
-}
-
-class MedicineCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const MedicineCard({
-    super.key,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.medication, size: 40, color: Colors.orange),
-
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(subtitle,
-                    style: const TextStyle(color: Colors.grey)),
-                const SizedBox(height: 8),
-
-                Row(
-                  children: [
-                    _chip("After Breakfast", Colors.green.shade100),
-                    const SizedBox(width: 6),
-                    _chip("After Dinner", Colors.orange.shade100),
-                  ],
-                )
-              ],
-            ),
-          ),
-
-          const Icon(Icons.more_vert)
-        ],
-      ),
-    );
-  }
-
-  Widget _chip(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(text, style: const TextStyle(fontSize: 10)),
     );
   }
 }
