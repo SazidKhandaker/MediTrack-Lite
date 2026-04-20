@@ -58,18 +58,36 @@ class _LoginPageState extends State<LoginPage>
     }
 
     try {
+      UserCredential userCredential =
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      showSnack("Login successful ✅", color: Colors.green);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const Homepage()),
-      );
+      if (userCredential.user != null) {
+        showSnack("Login successful ✅", color: Colors.green);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const Homepage()),
+        );
+      }
+
+    } on FirebaseAuthException catch (e) {
+      print("ERROR CODE: ${e.code}"); // 🔥 debug
+
+      if (e.code == 'user-not-found') {
+        showSnack("User not found ❌");
+      } else if (e.code == 'wrong-password') {
+        showSnack("Wrong password ❌");
+      } else if (e.code == 'invalid-email') {
+        showSnack("Invalid email ❌");
+      } else {
+        showSnack(e.message ?? "Login failed");
+      }
     } catch (e) {
-      showSnack("Login failed ❌");
+      print("UNKNOWN ERROR: $e"); // 🔥 debug
+      showSnack("Something went wrong ❌");
     }
   }
 
