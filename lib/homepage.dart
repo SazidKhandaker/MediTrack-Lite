@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:meditrack/bottomnavigation/profilepage.dart' show ProfilePage;
 import 'package:meditrack/bottomnavigation/calendar_page.dart' show CalendarPage;
+import 'bottomnavigation/AddPage.dart' show AddPage;
+import 'bottomnavigation/Listpage.dart' show ListPage;
 import 'medicinecard.dart';
-import 'calendar_page.dart';
-import 'add_page.dart';
-import 'list_page.dart';
-import 'profile_page.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -205,7 +204,7 @@ class _HomePageState extends State<HomePage> {
                   const NeverScrollableScrollPhysics(),
                   itemCount: medicines.length,
                   itemBuilder: (context, index) {
-                    var item = medicines[index;
+                    var item = medicines[index];
 
                     String title =
                         item['openfda']?['brand_name']?[0] ??
