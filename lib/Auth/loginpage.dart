@@ -14,7 +14,6 @@ class _LoginPageState extends State<LoginPage>
 
   bool isChecked = false;
 
-  // 🔥 Controllers
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -32,7 +31,6 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
-  // 🔥 Snackbar function
   void showSnack(String message, {Color color = Colors.red}) {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -45,18 +43,13 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  // 🔥 Validation
+  // 🔐 LOGIN
   Future<void> validateAndLogin() async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
       showSnack("Required Fields are empty");
-      return;
-    }
-
-    if (!email.contains("@gmail.com") && !email.contains("@yahoo.com")) {
-      showSnack("Invalid Email");
       return;
     }
 
@@ -67,13 +60,35 @@ class _LoginPageState extends State<LoginPage>
       );
 
       showSnack("Login successful ✅", color: Colors.green);
-
-      // 👉 next screen e jao (optional)
-      // Navigator.pushReplacement(context,
-      //   MaterialPageRoute(builder: (_) => HomePage()));
-
     } catch (e) {
       showSnack("Login failed ❌");
+    }
+  }
+
+  // 🆕 SIGNUP
+  Future<void> validateAndSignup() async {
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      showSnack("Required Fields are empty");
+      return;
+    }
+
+    if (!isChecked) {
+      showSnack("Please accept terms");
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      showSnack("Signup successful ✅", color: Colors.green);
+    } catch (e) {
+      showSnack("Signup failed ❌");
     }
   }
 
@@ -82,7 +97,6 @@ class _LoginPageState extends State<LoginPage>
     return Scaffold(
       resizeToAvoidBottomInset: true,
 
-      // 🔻 Bottom bar
       bottomNavigationBar: Container(
         height: 100,
         decoration: const BoxDecoration(
@@ -93,7 +107,7 @@ class _LoginPageState extends State<LoginPage>
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Positioned(
+            const Positioned(
               left: 20,
               bottom: 50,
               child: Text(
@@ -106,7 +120,11 @@ class _LoginPageState extends State<LoginPage>
               right: 20,
               child: GestureDetector(
                 onTap: () {
-                  validateAndLogin();;
+                  if (_tabController.index == 0) {
+                    validateAndLogin();
+                  } else {
+                    validateAndSignup();
+                  }
                 },
                 child: Container(
                   height: 65,
@@ -122,7 +140,11 @@ class _LoginPageState extends State<LoginPage>
                       )
                     ],
                   ),
-                  child: Icon(Icons.arrow_forward),
+                  child: Icon(
+                    _tabController.index == 0
+                        ? Icons.login
+                        : Icons.app_registration,
+                  ),
                 ),
               ),
             ),
@@ -169,98 +191,133 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  // 🔹 Login UI
+  // 🔹 LOGIN UI
   Widget _buildLogin() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const Icon(Icons.person, color: Colors.white, size: 60),
-            const SizedBox(height: 10),
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          const Icon(Icons.person, color: Colors.white, size: 60),
+          const SizedBox(height: 20),
 
-            const Text(
-              "Log In to Account",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
+          _textField("Email", controller: emailController),
+          const SizedBox(height: 15),
+          _textField("Password",
+              isPassword: true, controller: passwordController),
 
-            const SizedBox(height: 30),
+          const SizedBox(height: 20),
 
-            _textField("Email", controller: emailController),
-            const SizedBox(height: 15),
-            _textField("Password",
-                isPassword: true, controller: passwordController),
-
-            const SizedBox(height: 20),
-
-            _socialButton("Log in with Google"),
-            _socialButton("Log in with Facebook"),
-
-            const SizedBox(height: 80),
-          ],
-        ),
+          // 🔥 ADDED
+          _socialButton(
+            text: "Continue with Google",
+            bgColor: Colors.white,
+            textColor: Colors.black,
+            icon: Icons.g_mobiledata,
+          ),
+          _socialButton(
+            text: "Continue with Facebook",
+            bgColor: Color(0xFF1877F2),
+            textColor: Colors.white,
+            icon: Icons.facebook,
+          ),
+        ],
       ),
     );
   }
 
-  // 🔹 Signup UI
+  // 🔹 SIGNUP UI
   Widget _buildSignup() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          const Icon(Icons.person_add, color: Colors.white, size: 60),
+          const SizedBox(height: 20),
+
+          _textField("Email", controller: emailController),
+          const SizedBox(height: 15),
+          _textField("Password",
+              isPassword: true, controller: passwordController),
+
+          const SizedBox(height: 20),
+
+          // 🔥 ADDED
+          _socialButton(
+            text: "Sign up with Google",
+            bgColor: Colors.white,
+            textColor: Colors.black,
+            icon: Icons.g_mobiledata,
+          ),
+          _socialButton(
+            text: "Sign up with Facebook",
+            bgColor: Color(0xFF1877F2),
+            textColor: Colors.white,
+            icon: Icons.facebook,
+          ),
+
+          Row(
+            children: [
+              Checkbox(
+                value: isChecked,
+                onChanged: (value) {
+                  setState(() {
+                    isChecked = value!;
+                  });
+                },
+              ),
+              const Text("I agree to Terms",
+                  style: TextStyle(color: Colors.white70)),
+            ],
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
+    );
+  }
+
+  Widget _socialButton({
+    required String text,
+    required Color bgColor,
+    required Color textColor,
+    required IconData icon,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        showSnack("$text clicked", color: Colors.blue);
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            )
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.person_add, color: Colors.white, size: 60),
-            const SizedBox(height: 10),
-
-            const Text(
-              "Create an Account",
-              style: TextStyle(color: Colors.white, fontSize: 20),
+            Icon(icon, color: textColor),
+            const SizedBox(width: 10),
+            Text(
+              text,
+              style: TextStyle(
+                color: textColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
             ),
-
-            const SizedBox(height: 30),
-
-            _textField("Email", controller: emailController),
-            const SizedBox(height: 15),
-            _textField("Password",
-                isPassword: true, controller: passwordController),
-
-            const SizedBox(height: 20),
-
-            _socialButton("Sign up with Google"),
-            _socialButton("Sign up with Facebook"),
-
-            const SizedBox(height: 20),
-
-            Row(
-              children: [
-                Checkbox(
-                  value: isChecked,
-                  onChanged: (value) {
-                    setState(() {
-                      isChecked = value!;
-                    });
-                  },
-                ),
-                const Text("I agree to Terms",
-                    style: TextStyle(color: Colors.white70)),
-              ],
-            ),
-
-            const SizedBox(height: 80),
           ],
         ),
       ),
     );
   }
 
-  // 🔹 TextField
   Widget _textField(String hint,
       {bool isPassword = false, TextEditingController? controller}) {
     return TextField(
@@ -275,22 +332,6 @@ class _LoginPageState extends State<LoginPage>
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-      ),
-    );
-  }
-
-  // 🔹 Social Button
-  Widget _socialButton(String text) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 5),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(
-        child: Text(text, style: const TextStyle(color: Colors.white)),
       ),
     );
   }
