@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:meditrack/Auth/loginpage.dart' show LoginPage;
+import 'package:meditrack/bottomnavigation/profile/editprofile.dart' show EditProfilePage;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -150,6 +152,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 onPressed: () async {
                   await FirebaseAuth.instance.signOut();
+
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) =>  LoginPage()),
+                        (route) => false,
+                  );
                 },
                 child: const Text("Logout"),
               ),

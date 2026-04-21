@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:meditrack/bottomnavigation/profilepage.dart' show ProfilePage;
+import 'package:meditrack/bottomnavigation/profile/profilepage.dart' show ProfilePage;
 import 'package:meditrack/bottomnavigation/calendar_page.dart' show CalendarPage;
 import 'bottomnavigation/AddPage.dart' show AddPage;
 import 'bottomnavigation/Listpage.dart' show ListPage;
+import 'package:firebase_auth/firebase_auth.dart';
 
+User? user = FirebaseAuth.instance.currentUser;
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -157,15 +159,42 @@ class _HomePageState extends State<HomePage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius:
-                        BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.notifications,
-                          color: Colors.white),
+                    Row(
+                      children: [
+
+                        // 🔔 Notification
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.notifications, color: Colors.white),
+                        ),
+
+                        const SizedBox(width: 10),
+
+                        // 👤 Profile Avatar
+                        GestureDetector(
+                          onTap: () {
+                            navigateTo(4); // profile page
+                          },
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.grey.shade300,
+
+                            // 🔥 if photo exists
+                            backgroundImage: user?.photoURL != null
+                                ? NetworkImage(user!.photoURL!)
+                                : null,
+
+                            // 🔥 fallback icon
+                            child: user?.photoURL == null
+                                ? const Icon(Icons.person, color: Colors.grey)
+                                : null,
+                          ),
+                        ),
+                      ],
                     )
                   ],
                 ),

@@ -123,7 +123,7 @@ class _LoginPageState extends State<LoginPage>
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
-
+      await userCredential.user!.reload();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
         showSnack("Email already used");
