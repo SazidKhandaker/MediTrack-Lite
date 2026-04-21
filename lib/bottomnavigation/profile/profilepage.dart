@@ -100,10 +100,14 @@ class _ProfilePageState extends State<ProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user?.displayName ?? "User Name",
+                          (user?.displayName?.isNotEmpty ?? false)
+                              ? user!.displayName!
+                              : "User Name",
+
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                         Text(
                           user?.email ?? "",
