@@ -178,6 +178,21 @@ class _HomePageState extends State<HomePage> {
                     scrollDirection: Axis.horizontal,
                     itemCount: 5,
                     itemBuilder: (context, index) {
+
+                      DateTime date = DateTime.now().add(Duration(days: index - 1));
+
+                      String day = date.day.toString();
+
+                      String weekDay = [
+                        "Mon",
+                        "Tue",
+                        "Wed",
+                        "Thu",
+                        "Fri",
+                        "Sat",
+                        "Sun"
+                      ][date.weekday - 1];
+
                       return GestureDetector(
                         onTap: () {
                           setState(() {
@@ -185,15 +200,14 @@ class _HomePageState extends State<HomePage> {
                           });
                         },
                         child: _dateItem(
-                          "${4 + index}",
-                          ["Sat", "Sun", "Mon", "Tue", "Wed"][index],
+                          day,
+                          weekDay,
                           selectedIndex == index,
                         ),
                       );
                     },
                   ),
                 ),
-
                 const SizedBox(height: 20),
 
                 medicines.isEmpty
