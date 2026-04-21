@@ -1,4 +1,3 @@
-// homepage.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -6,8 +5,6 @@ import 'package:meditrack/bottomnavigation/profilepage.dart' show ProfilePage;
 import 'package:meditrack/bottomnavigation/calendar_page.dart' show CalendarPage;
 import 'bottomnavigation/AddPage.dart' show AddPage;
 import 'bottomnavigation/Listpage.dart' show ListPage;
-import 'medicinecard.dart';
-
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,6 +17,8 @@ class _HomePageState extends State<HomePage> {
   int selectedIndex = 1;
   List medicines = [];
 
+  Map<int, bool> takenStatus = {}; // 🔥 taken/missed
+
   @override
   void initState() {
     super.initState();
@@ -28,7 +27,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> fetchMedicine(String name) async {
     final url =
-        "https://api.fda.gov/drug/label.json?search=$name&limit=3";
+        "https://api.fda.gov/drug/label.json?search=$name&limit=5";
 
     final response = await http.get(Uri.parse(url));
 
@@ -40,7 +39,14 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // 🔥 NAVIGATION FUNCTION
+  // 🔥 progress
+  double getProgress() {
+    if (medicines.isEmpty) return 0;
+    int taken = takenStatus.values.where((e) => e).length;
+    return taken / medicines.length;
+  }
+
+  // 🔥 NAVIGATION
   void navigateTo(int index) {
     Widget page;
 
@@ -75,7 +81,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
 
-      // 🔥 CLICKABLE NAV BAR
+      // 🔥 NAV BAR (unchanged)
       bottomNavigationBar: Container(
         height: 80,
         decoration: BoxDecoration(
@@ -90,19 +96,16 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
 
-            // HOME
             GestureDetector(
               onTap: () => navigateTo(0),
               child: const Icon(Icons.grid_view, color: Colors.blue),
             ),
 
-            // CALENDAR
             GestureDetector(
               onTap: () => navigateTo(1),
               child: const Icon(Icons.calendar_today, color: Colors.grey),
             ),
 
-            // ADD
             GestureDetector(
               onTap: () => navigateTo(2),
               child: Container(
@@ -121,13 +124,11 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // LIST
             GestureDetector(
               onTap: () => navigateTo(3),
               child: const Icon(Icons.list_alt, color: Colors.grey),
             ),
 
-            // PROFILE
             GestureDetector(
               onTap: () => navigateTo(4),
               child: const Icon(Icons.person, color: Colors.grey),
@@ -144,7 +145,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                // HEADER
+                // 🔝 HEADER
                 Row(
                   mainAxisAlignment:
                   MainAxisAlignment.spaceBetween,
@@ -171,7 +172,7 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 20),
 
-                // DATE
+                // 📅 DATE (real-time)
                 SizedBox(
                   height: 80,
                   child: ListView.builder(
@@ -179,18 +180,13 @@ class _HomePageState extends State<HomePage> {
                     itemCount: 5,
                     itemBuilder: (context, index) {
 
-                      DateTime date = DateTime.now().add(Duration(days: index - 1));
+                      DateTime date =
+                      DateTime.now().add(Duration(days: index - 1));
 
                       String day = date.day.toString();
 
                       String weekDay = [
-                        "Mon",
-                        "Tue",
-                        "Wed",
-                        "Thu",
-                        "Fri",
-                        "Sat",
-                        "Sun"
+                        "Mon","Tue","Wed","Thu","Fri","Sat","Sun"
                       ][date.weekday - 1];
 
                       return GestureDetector(
@@ -208,8 +204,24 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                 ),
+
+                const SizedBox(height: 15),
+
+                // 🔥 PROGRESS
+                const Text("Today's Progress",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+
+                const SizedBox(height: 6),
+
+                LinearProgressIndicator(
+                  value: getProgress(),
+                  color: Colors.green,
+                  backgroundColor: Colors.grey.shade300,
+                ),
+
                 const SizedBox(height: 20),
 
+                // 🔥 MEDICINE LIST
                 medicines.isEmpty
                     ? const Center(child: CircularProgressIndicator())
                     : ListView.builder(
@@ -218,6 +230,7 @@ class _HomePageState extends State<HomePage> {
                   const NeverScrollableScrollPhysics(),
                   itemCount: medicines.length,
                   itemBuilder: (context, index) {
+
                     var item = medicines[index];
 
                     String title =
@@ -226,11 +239,92 @@ class _HomePageState extends State<HomePage> {
 
                     String desc =
                         item['purpose']?[0] ??
-                            "No Description";
+                            "Take after meal";
 
-                    return MedicineCard(
-                      title: title,
-                      subtitle: desc,
+                    bool isTaken =
+                        takenStatus[index] ?? false;
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                        BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 6)
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+
+                          Text(title,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16)),
+
+                          Text(desc,
+                              style:
+                              const TextStyle(color: Colors.grey)),
+
+                          const SizedBox(height: 8),
+
+                          const Text(
+                            "Next dose: 8:00 PM",
+                            style:
+                            TextStyle(color: Colors.orange),
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          Row(
+                            children: [
+
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    takenStatus[index] = true;
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                    Colors.green),
+                                child: const Text("Taken"),
+                              ),
+
+                              const SizedBox(width: 10),
+
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    takenStatus[index] = false;
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                    Colors.red),
+                                child: const Text("Missed"),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 5),
+
+                          Text(
+                            isTaken
+                                ? "✔ Taken"
+                                : "❌ Not taken",
+                            style: TextStyle(
+                                color: isTaken
+                                    ? Colors.green
+                                    : Colors.red),
+                          )
+                        ],
+                      ),
                     );
                   },
                 ),
