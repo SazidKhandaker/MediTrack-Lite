@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import '../Auth/loginpage.dart' show Loginpage, LoginPage;
+import '../Auth/loginpage.dart';
+import '../homepage.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,13 +28,24 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animation = Tween<double>(begin: 0.8, end: 1.2).animate(_controller);
 
+    // 🔥 FIXED LOGIC
     Future.delayed(const Duration(seconds: 4), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>  LoginPage(),
-        ),
-      );
+
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // ✅ already logged in
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      } else {
+        // ❌ not logged in
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+        );
+      }
 
     });
   }
@@ -46,7 +59,6 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
@@ -65,10 +77,11 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                Icon(Icons.monitor_heart, size: 80, color: Colors.white),
+                Icon(Icons.monitor_heart,
+                    size: 80, color: Colors.white),
                 SizedBox(height: 10),
                 Text(
-                  "MediTrack ",
+                  "MediTrack",
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.white,
