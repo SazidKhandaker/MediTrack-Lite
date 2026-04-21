@@ -1,39 +1,46 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-Future<void> pickAndUploadImage() async {
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) return;
-
+Future<void> uploadToCloudinary() async {
   final picker = ImagePicker();
 
-  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  final pickedFile = await picker.pickImage(
+    source: ImageSource.gallery,
+    imageQuality: 60,
+  );
 
   if (pickedFile == null) return;
 
   File file = File(pickedFile.path);
 
-  try {
-    // 🔥 upload to Firebase Storage
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('profile_images')
-        .child('${user.uid}.jpg');
+  var request = http.MultipartRequest(
+    'POST',
+    Uri.parse('https://api.cloudinary.com/v1_1/duon0wkfh/image/upload'),
+  );
 
-    await ref.putFile(file);
+  request.fields['upload_preset'] = 'meditrack_upload';
 
-    // 🔗 get download URL
-    final url = await ref.getDownloadURL();
+  request.files.add(
+    await http.MultipartFile.fromPath('file', file.path),
+  );
+  var response = await request.send();
+  var res = await http.Response.fromStream(response);
 
-    // 👤 set Firebase Auth photoURL
-    await user.updatePhotoURL(url);
+  if (response.statusCode == 200) {
+    final data = jsonDecode(res.body);
+
+    String imageUrl = data['secure_url'];
+
+    print("Uploaded: $imageUrl");
+
+    final user = FirebaseAuth.instance.currentUser;
+    await user!.updatePhotoURL(imageUrl);
     await user.reload();
 
-    print("Photo uploaded: $url");
-
-  } catch (e) {
-    print("Upload error: $e");
+  } else {
+    print("Upload failed: ${res.body}");
   }
 }
