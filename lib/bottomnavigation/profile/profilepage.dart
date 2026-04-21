@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meditrack/Auth/loginpage.dart' show LoginPage;
 import 'package:meditrack/bottomnavigation/profile/editprofile.dart' show EditProfilePage;
+import 'package:meditrack/bottomnavigation/profile/imageuplaoded.dart' show pickAndUploadImage;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -47,15 +48,22 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
 
                   // 👤 Profile Image
-                  CircleAvatar(
-                    radius: 35,
-                    backgroundColor: Colors.grey.shade300,
-                    backgroundImage: user?.photoURL != null
-                        ? NetworkImage(user!.photoURL!)
-                        : null,
-                    child: user?.photoURL == null
-                        ? const Icon(Icons.person, size: 35)
-                        : null,
+                  GestureDetector(
+                    onTap: () async {
+                      await pickAndUploadImage();
+
+                      setState(() {}); // 🔥 refresh UI
+                    },
+                    child: CircleAvatar(
+                      radius: 35,
+                      backgroundColor: Colors.grey.shade300,
+                      backgroundImage: user?.photoURL != null
+                          ? NetworkImage(user!.photoURL!)
+                          : null,
+                      child: user?.photoURL == null
+                          ? const Icon(Icons.camera_alt, size: 30)
+                          : null,
+                    ),
                   ),
 
                   const SizedBox(width: 15),

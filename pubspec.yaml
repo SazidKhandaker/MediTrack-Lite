@@ -38,6 +38,9 @@ dependencies:
   firebase_auth: ^5.3.1
   http: ^1.2.0
   curved_navigation_bar: ^1.0.3
+  image_picker: ^1.0.7
+  firebase_storage: ^12.4.10
+
 
 dev_dependencies:
   flutter_test:
