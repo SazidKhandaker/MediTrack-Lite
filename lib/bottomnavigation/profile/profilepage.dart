@@ -90,9 +90,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         Text(
                           user?.displayName ?? "User Name",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
+                            color: Colors.black
                           ),
                         ),
                         Text(
@@ -144,23 +145,24 @@ class _ProfilePageState extends State<ProfilePage> {
                         notificationOn = val;
                       });
                     },
-                    title: const Text("Notifications"),
+                    title: const Text("Notifications",style: TextStyle(color:Colors.black, fontWeight: FontWeight.bold),),
                   ),
 
                   const Divider(),
 
                   // 🌙 THEME SWITCH
                 SwitchListTile(
+
                   secondary: Icon(
                     MyApp.of(context).isDark
                         ? Icons.light_mode
                         : Icons.dark_mode,
-                  ),
+                 color: Colors.grey[700], ),
                   title: Text(
                     MyApp.of(context).isDark
                         ? "Dark Mode"
                         : "Light Mode",
-                  ),
+                      style: TextStyle(color:Colors.black, fontWeight: FontWeight.bold)),
                   value: MyApp.of(context).isDark,
                   onChanged: (val) {
                     MyApp.of(context).changeTheme(val);
@@ -171,8 +173,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   // 🌐 LANGUAGE (dummy for now)
                   const ListTile(
-                    title: Text("Language"),
-                    trailing: Text("English"),
+                    title: Text("Language",  style: TextStyle(color:Colors.black, fontWeight: FontWeight.bold)),
+                    trailing: Text("English",  style: TextStyle(color:Colors.black, fontWeight: FontWeight.bold),),
+                    textColor: Colors.black,
                   ),
                 ],
               ),
