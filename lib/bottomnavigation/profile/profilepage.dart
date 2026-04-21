@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:meditrack/Auth/loginpage.dart' show LoginPage;
-import 'package:meditrack/bottomnavigation/profile/editprofile.dart' show EditProfilePage;
-import 'package:meditrack/bottomnavigation/profile/imageuplaoded.dart' show pickAndUploadImage, uploadToImgur, uploadToCloudinary;
+import 'package:meditrack/Auth/loginpage.dart';
+import 'package:meditrack/bottomnavigation/profile/editprofile.dart';
+import 'package:meditrack/bottomnavigation/profile/imageuplaoded.dart';
+import 'package:meditrack/main.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -12,7 +13,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
   final user = FirebaseAuth.instance.currentUser;
 
   bool notificationOn = true;
@@ -20,8 +20,9 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
+      // 🔥 APP BAR
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
@@ -32,31 +33,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 Color(0xFF2F9E5B),
                 Color(0xFF2E8B57),
               ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
             ),
           ),
         ),
         title: const Text(
           "Settings",
           style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
             color: Colors.white,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.white.withOpacity(0.2),
-              child: Icon(Icons.settings, size: 18, color: Colors.white),
-            ),
-          ),
-        ],
       ),
 
+      // 🔥 BODY
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -68,14 +57,14 @@ class _ProfilePageState extends State<ProfilePage> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(color: Colors.black12, blurRadius: 6)
                 ],
               ),
               child: Row(
                 children: [
 
-                  // 👤 Profile Image
+                  // 👤 IMAGE
                   GestureDetector(
                     onTap: () async {
                       await uploadToCloudinary();
@@ -87,23 +76,20 @@ class _ProfilePageState extends State<ProfilePage> {
                           ? NetworkImage(user!.photoURL!)
                           : null,
                       child: user?.photoURL == null
-                          ? Icon(Icons.person)
+                          ? const Icon(Icons.camera_alt)
                           : null,
                     ),
                   ),
 
                   const SizedBox(width: 15),
 
-                  // 👤 Name + Email
+                  // 👤 NAME + EMAIL
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          (user?.displayName?.isNotEmpty ?? false)
-                              ? user!.displayName!
-                              : "User Name",
-
+                          user?.displayName ?? "User Name",
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -115,7 +101,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 5),
 
-                        // ✏️ Edit Profile
                         GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -127,8 +112,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: const Text(
                             "Edit profile",
                             style: TextStyle(
-                                color: Colors.pink,
-                                fontWeight: FontWeight.bold),
+                              color: Colors.pink,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         )
                       ],
@@ -140,7 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 20),
 
-            // 🔥 SETTINGS LIST
+            // 🔥 SETTINGS CARD
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -150,7 +136,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 children: [
 
-                  // 🔔 Notification
+                  // 🔔 NOTIFICATION
                   SwitchListTile(
                     value: notificationOn,
                     onChanged: (val) {
@@ -163,14 +149,30 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const Divider(),
 
-                  ListTile(
-                    title: const Text("Theme mode"),
-                    trailing: const Text("Light"),
+                  // 🌙 THEME SWITCH
+                SwitchListTile(
+                  secondary: Icon(
+                    MyApp.of(context).isDark
+                        ? Icons.light_mode
+                        : Icons.dark_mode,
                   ),
+                  title: Text(
+                    MyApp.of(context).isDark
+                        ? "Dark Mode"
+                        : "Light Mode",
+                  ),
+                  value: MyApp.of(context).isDark,
+                  onChanged: (val) {
+                    MyApp.of(context).changeTheme(val);
+                  },
+                ),
 
-                  ListTile(
-                    title: const Text("Language"),
-                    trailing: const Text("English"),
+                  const Divider(),
+
+                  // 🌐 LANGUAGE (dummy for now)
+                  const ListTile(
+                    title: Text("Language"),
+                    trailing: Text("English"),
                   ),
                 ],
               ),
@@ -178,7 +180,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 30),
 
-            // 🔴 LOGOUT BUTTON
+            // 🔴 LOGOUT
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -186,14 +188,15 @@ class _ProfilePageState extends State<ProfilePage> {
                   backgroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: () async {
                   await FirebaseAuth.instance.signOut();
 
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) =>  LoginPage()),
+                    MaterialPageRoute(builder: (_) => LoginPage()),
                         (route) => false,
                   );
                 },
