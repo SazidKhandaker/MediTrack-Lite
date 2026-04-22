@@ -25,6 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
     user = FirebaseAuth.instance.currentUser;
   }
   Widget build(BuildContext context) {
+    final lang = Localizations.localeOf(context).languageCode;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 

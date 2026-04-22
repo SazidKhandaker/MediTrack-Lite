@@ -71,7 +71,11 @@ class _MyAppState extends State<MyApp> {
         Locale('en'),
         Locale('bn'),
       ],
-
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       // 🔥 THEME
       themeMode: _isDark ? ThemeMode.dark : ThemeMode.light,
       theme: ThemeData.light(),
