@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:meditrack/Utils/app_text.dart' show AppText;
 import 'package:meditrack/bottomnavigation/profile/imageuplaoded.dart'
     show uploadToCloudinary;
 import 'package:meditrack/bottomnavigation/profile/profilepage.dart' show ProfilePage;
@@ -55,12 +56,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final lang = Localizations.localeOf(context).languageCode;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       appBar: AppBar(
-        title: const Text("Your Profile",style: TextStyle(fontWeight: FontWeight.bold)),
+        title:  Text("${AppText.editProfile(lang)}",style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
 
@@ -94,7 +96,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             const SizedBox(height: 10),
 
             Text(
-              "Update Profile Picture",
+              "${AppText.updateProfilePicture(lang)}",
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey,
               ),
@@ -114,7 +116,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                   // 👤 FULL NAME
                   _buildField(
-                    label: "Full Name",
+                    label: "${AppText.fullName(lang)}",
                     controller: nameController,
                     isDark: isDark,
                   ),
@@ -123,7 +125,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                   // 📧 EMAIL
                   _buildField(
-                    label: "Email Address",
+                    label: AppText.email(lang),
                     initial: user?.email ?? "",
                     readOnly: true,
                     isDark: isDark,
@@ -135,8 +137,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "About Me",
+                       Text(
+                        AppText.about(lang),
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       IconButton(
@@ -284,8 +286,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     );
                   }
                 },
-                child: const Text(
-                  "Save Update",
+                child:  Text(
+                  AppText.save(lang),
                   style: TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,

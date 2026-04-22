@@ -1,5 +1,5 @@
 class AppText {
-
+// profile page jonno
   static String settings(String lang) {
     return lang == 'bn' ? "সেটিংস" : "Settings";
   }
@@ -48,5 +48,18 @@ class AppText {
   }
   static String logout(String lang) {
     return lang == 'bn' ? "লগ আউট" : "Logout";
+  }
+  //editpage jonno
+  static String fullName(String lang) {
+    return lang == 'bn' ? "পূর্ণ নাম" : "Full Name";
+  }
+
+  static String email(String lang) {
+    return lang == 'bn' ? "ইমেইল" : "Email";
+  }
+  static String updateProfilePicture(String lang) {
+    return lang == 'bn'
+        ? "প্রোফাইল ছবি আপডেট করুন"
+        : "Update Profile Picture";
   }
 }
