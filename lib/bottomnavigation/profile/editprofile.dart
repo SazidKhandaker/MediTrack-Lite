@@ -11,15 +11,16 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final user = FirebaseAuth.instance.currentUser;
+
 
   final nameController = TextEditingController();
   final aboutController = TextEditingController();
-
+  User? user;
   @override
   void initState() {
     super.initState();
     nameController.text = user?.displayName ?? "";
+    user = FirebaseAuth.instance.currentUser;
   }
 
   @override
@@ -40,10 +41,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
           children: [
 
             // 🔥 PROFILE IMAGE
-            GestureDetector(     onTap: () async {
-      await uploadToCloudinary();
-      setState(() {});
-      },
+            GestureDetector(    onTap: () async {
+              String? url = await uploadToCloudinary();
+
+              if (url != null) {
+                setState(() {
+                  user = FirebaseAuth.instance.currentUser;
+                });
+              }
+            },
               child: CircleAvatar(
                 radius: 45,
                 backgroundImage: user?.photoURL != null

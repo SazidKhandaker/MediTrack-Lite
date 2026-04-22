@@ -13,7 +13,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  
+
 
   bool notificationOn = true;
   User? user;
@@ -72,8 +72,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   // 👤 IMAGE
                   GestureDetector(
                     onTap: () async {
-                      await uploadToCloudinary();
-                      setState(() {});
+                      String? url = await uploadToCloudinary();
+
+                      if (url != null) {
+                        setState(() {
+                          user = FirebaseAuth.instance.currentUser;
+                        });
+                      }
                     },
                     child: CircleAvatar(
                       radius: 35,

@@ -7,7 +7,7 @@ import 'bottomnavigation/AddPage.dart' show AddPage;
 import 'bottomnavigation/Listpage.dart' show ListPage;
 import 'package:firebase_auth/firebase_auth.dart';
 
-User? user = FirebaseAuth.instance.currentUser;
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -131,10 +131,37 @@ class _HomePageState extends State<HomePage> {
               child: const Icon(Icons.list_alt, color: Colors.grey),
             ),
 
-            GestureDetector(
-              onTap: () => navigateTo(4),
-              child: const Icon(Icons.person, color: Colors.grey),
-            ),
+    GestureDetector(
+    onTap: () async {
+    await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const ProfilePage()),
+    );
+
+    setState(() {}); // 🔥 refresh homepage
+    },
+    child: Builder(
+    builder: (context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    return CircleAvatar(
+    radius: 20,
+    backgroundColor: Colors.grey.shade300,
+
+    backgroundImage: user?.photoURL != null
+    ? NetworkImage(
+    user!.photoURL! +
+    "?t=${DateTime.now().millisecondsSinceEpoch}",
+    )
+        : null,
+
+    child: user?.photoURL == null
+    ? const Icon(Icons.person, color: Colors.grey)
+        : null,
+    );
+    },
+    ),
+    ),
           ],
         ),
       ),
@@ -175,25 +202,37 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(width: 10),
 
                         // 👤 Profile Avatar
-                        GestureDetector(
-                          onTap: () {
-                            navigateTo(4); // profile page
-                          },
-                          child: CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.grey.shade300,
+          GestureDetector(
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              );
 
-                            // 🔥 if photo exists
-                            backgroundImage: user?.photoURL != null
-                                ? NetworkImage(user!.photoURL!)
-                                : null,
+              setState(() {}); // 🔥 extra safety
+            },
+            child: StreamBuilder<User?>(
+              stream: FirebaseAuth.instance.userChanges(), // 🔥 FIXED
+              builder: (context, snapshot) {
 
-                            // 🔥 fallback icon
-                            child: user?.photoURL == null
-                                ? const Icon(Icons.person, color: Colors.grey)
-                                : null,
-                          ),
-                        ),
+                final user = snapshot.data;
+
+                return CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.grey.shade300,
+
+                  backgroundImage: user?.photoURL != null
+                      ? NetworkImage(
+                    user!.photoURL!)
+                      : null,
+
+                  child: user?.photoURL == null
+                      ? const Icon(Icons.person, color: Colors.grey)
+                      : null,
+                );
+              },
+            ),
+          ),
                       ],
                     )
                   ],
