@@ -60,7 +60,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       appBar: AppBar(
-        title: const Text("Your Profile"),
+        title: const Text("Your Profile",style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
 
@@ -287,7 +287,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 child: const Text(
                   "Save Update",
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Colors.green,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
