@@ -98,13 +98,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          user?.displayName ?? "User Name",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.black
-                          ),
+                        StreamBuilder(
+                          stream: FirebaseAuth.instance.userChanges(),
+                          builder: (context, snapshot) {
+                            final user = snapshot.data;
+
+                            return Text(
+                              user?.displayName ?? "User Name",
+                              style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.black),
+                            );
+                          },
                         ),
                         Text(
                           user?.email ?? "",
