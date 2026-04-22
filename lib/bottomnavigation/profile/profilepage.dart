@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meditrack/Auth/loginpage.dart';
+import 'package:meditrack/Utils/app_text.dart' show AppText;
 import 'package:meditrack/bottomnavigation/profile/editprofile.dart';
 import 'package:meditrack/bottomnavigation/profile/imageuplaoded.dart';
 import 'package:meditrack/main.dart';
@@ -14,7 +15,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
 
-
+  late final lang = Localizations.localeOf(context).languageCode;
   bool notificationOn = true;
   User? user;
 
@@ -41,9 +42,9 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
-        title: const Text(
-          "Settings",
-          style: TextStyle(
+        title: Text(
+          AppText.about(lang),
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
@@ -193,6 +194,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 trailing: DropdownButtonHideUnderline(
                   child: Container(
+                    width: 120,
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade400),
