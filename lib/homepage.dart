@@ -179,13 +179,14 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment:
                   MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       "Your Medicines\nReminder",
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                    ),
+                ),
                     Row(
                       children: [
 
@@ -313,18 +314,20 @@ class _HomePageState extends State<HomePage> {
                         takenStatus[index] ?? false;
 
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
+                      margin: EdgeInsets.symmetric(vertical: 10),
+                      padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius:
-                        BorderRadius.circular(16),
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 6)
+                            color: Colors.black12,
+                            blurRadius: 8,
+                          ),
                         ],
                       ),
+
+
                       child: Column(
                         crossAxisAlignment:
                         CrossAxisAlignment.start,
