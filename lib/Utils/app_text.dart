@@ -27,4 +27,26 @@ class AppText {
   static String updateProfile(String lang) {
     return lang == 'bn' ? "প্রোফাইল আপডেট করুন" : "Update Profile";
   }
+  static String editProfile(String lang) {
+    return lang == 'bn' ? "প্রোফাইল সম্পাদনা" : "Edit Profile";
+  }
+
+  static String notifications(String lang) {
+    return lang == 'bn' ? "নোটিফিকেশন" : "Notifications";
+  }
+
+  static String theme(String lang) {
+    return lang == 'bn' ? "থিম" : "Theme";
+  }
+
+  static String lightMode(String lang) {
+    return lang == 'bn' ? "লাইট মোড" : "Light Mode";
+  }
+
+  static String darkMode(String lang) {
+    return lang == 'bn' ? "ডার্ক মোড" : "Dark Mode";
+  }
+  static String logout(String lang) {
+    return lang == 'bn' ? "লগ আউট" : "Logout";
+  }
 }

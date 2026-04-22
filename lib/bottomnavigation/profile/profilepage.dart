@@ -43,8 +43,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
-        title: Text(
-          AppText.about(lang),
+        title: Text(AppText.settings(lang),
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -125,8 +124,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   builder: (_) => const EditProfilePage()),
                             );
                           },
-                          child: const Text(
-                            "Edit profile",
+                          child:  Text(
+                            AppText.editProfile(lang),
                             style: TextStyle(
                               color: Colors.pink,
                               fontWeight: FontWeight.bold,
@@ -160,7 +159,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         notificationOn = val;
                       });
                     },
-                    title: const Text("Notifications",style: TextStyle(color:Colors.black, fontWeight: FontWeight.bold),),
+                    title:  Text("${AppText.notifications(lang)}",style: TextStyle(color:Colors.black, fontWeight: FontWeight.bold),),
                   ),
 
                   const Divider(),
@@ -175,8 +174,8 @@ class _ProfilePageState extends State<ProfilePage> {
                  color: Colors.grey[700], ),
                   title: Text(
                     MyApp.of(context).isDark
-                        ? "Dark Mode"
-                        : "Light Mode",
+                        ? "${AppText.darkMode(lang)}"
+                        : "${AppText.lightMode(lang)}",
                       style: TextStyle(color:Colors.black, fontWeight: FontWeight.bold)),
                   value: MyApp.of(context).isDark,
                   onChanged: (val) {
@@ -188,8 +187,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   // 🌐 LANGUAGE (dummy for now)
               ListTile(
-                title: const Text(
-                  "Language",
+                title:  Text(
+                  "${AppText.language(lang)}",
                   style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black),
                 ),
 
@@ -244,7 +243,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         (route) => false,
                   );
                 },
-                child: const Text("Logout"),
+                child:  Text("${AppText.logout(lang)}", style: TextStyle(fontWeight: FontWeight.bold),),
               ),
             )
           ],
