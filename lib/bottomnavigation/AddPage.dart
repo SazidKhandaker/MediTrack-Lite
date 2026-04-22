@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:meditrack/Model/medicinemodel.dart' show Medicine;
 
 class AddPage extends StatelessWidget {
-  const AddPage({super.key});
-
+   AddPage({super.key});
+List<Medicine> globalMedicines=[];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
