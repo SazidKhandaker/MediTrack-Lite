@@ -185,11 +185,36 @@ class _ProfilePageState extends State<ProfilePage> {
                   const Divider(),
 
                   // 🌐 LANGUAGE (dummy for now)
-                  const ListTile(
-                    title: Text("Language",  style: TextStyle(color:Colors.black, fontWeight: FontWeight.bold)),
-                    trailing: Text("English",  style: TextStyle(color:Colors.black, fontWeight: FontWeight.bold),),
-                    textColor: Colors.black,
+              ListTile(
+                title: const Text(
+                  "Language",
+                  style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black),
+                ),
+
+                trailing: DropdownButtonHideUnderline(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      color: Colors.grey.shade200, // 🔥 light background
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: DropdownButton<String>(
+                      value: Localizations.localeOf(context).languageCode,
+                      dropdownColor: Colors.white, // 🔥 dropdown list color
+
+                      items: const [
+                        DropdownMenuItem(value: 'en', child: Text("English",style:TextStyle(fontWeight: FontWeight.bold,color: Colors.black))),
+                        DropdownMenuItem(value: 'bn', child: Text("বাংলা", style:TextStyle(fontWeight: FontWeight.bold,color: Colors.black),)),
+                      ],
+
+                      onChanged: (val) {
+                        MyApp.of(context).changeLanguage(val!);
+                      },
+                    ),
                   ),
+                ),
+              ),
                 ],
               ),
             ),
