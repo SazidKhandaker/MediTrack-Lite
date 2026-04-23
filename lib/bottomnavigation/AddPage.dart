@@ -74,8 +74,8 @@ class _AddPageState extends State<AddPage> {
                     selectedMeal = val!;
                   });
                 },
-                decoration: const InputDecoration(
-                  labelText: "Instruction",
+                decoration:  InputDecoration(
+                  labelText: "${AppText.instruction(lang)}",
                   border: InputBorder.none,
                   prefixIcon: Icon(Icons.restaurant),
                 ),
