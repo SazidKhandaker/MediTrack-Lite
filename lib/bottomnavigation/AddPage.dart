@@ -175,6 +175,7 @@ class _AddPageState extends State<AddPage> {
                         "time": selectedTime,
                         "date": selectedDate,
                         "createdAt": Timestamp.now(),
+                        "status": false,
                       });
 
                       ScaffoldMessenger.of(context).showSnackBar(
