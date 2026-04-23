@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meditrack/Utils/app_text.dart' show AppText;
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 class AddPage extends StatefulWidget {
   const AddPage({super.key});
 
@@ -149,27 +150,44 @@ class _AddPageState extends State<AddPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                  onPressed: () async {
 
-                  // 🔥 validation
-                  if (nameController.text.isEmpty ||
-                      selectedTime == null ||
-                      selectedDate == null) {
+                    if (nameController.text.isEmpty ||
+                        selectedTime == null ||
+                        selectedDate == null) {
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(AppText.fillAllFields(lang))),
-                    );
-                    return;
-                  }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(AppText.fillAllFields(lang))),
+                      );
+                      return;
+                    }
 
-                  // 🔥 HERE you will add Firebase save
+                    final user = FirebaseAuth.instance.currentUser;
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                     SnackBar(content: Text(AppText.saved(lang))),
-                  );
+                    try {
+                      await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user!.uid)
+                          .collection('medicines')
+                          .add({
+                        "name": nameController.text,
+                        "meal": selectedMeal,
+                        "time": selectedTime,
+                        "date": selectedDate,
+                        "createdAt": Timestamp.now(),
+                      });
 
-                  Navigator.pop(context);
-                },
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(AppText.saved(lang))),
+                      );
+
+                      Navigator.pop(context);
+
+                    } catch (e) {
+                      print(e);
+                    }
+                    print("🔥 Medicine saved to Firebase");
+                  },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   padding: const EdgeInsets.symmetric(vertical: 14),
