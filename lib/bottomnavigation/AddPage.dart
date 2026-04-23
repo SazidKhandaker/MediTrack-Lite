@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meditrack/Utils/app_text.dart' show AppText;
 
 class AddPage extends StatefulWidget {
   const AddPage({super.key});
@@ -17,12 +18,12 @@ class _AddPageState extends State<AddPage> {
 
   @override
   Widget build(BuildContext context) {
-
+    final lang = Localizations.localeOf(context).languageCode;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       appBar: AppBar(
-        title: const Text("Add Medicine"),
+        title:Text(AppText.addMedicine(lang)),
         centerTitle: true,
       ),
 
@@ -34,7 +35,7 @@ class _AddPageState extends State<AddPage> {
 
             // 🔥 TITLE
             Text(
-              "Add your medicine details",
+              "${ AppText.addMedicineDetails(lang)}",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -48,9 +49,9 @@ class _AddPageState extends State<AddPage> {
             _card(
               child: TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: "Medicine Name",
-                  prefixIcon: Icon(Icons.medication),
+                decoration: InputDecoration(
+                  labelText: "${AppText.medicineName(lang)}",
+                  prefixIcon: const Icon(Icons.medication),
                   border: InputBorder.none,
                 ),
               ),
@@ -62,11 +63,11 @@ class _AddPageState extends State<AddPage> {
             _card(
               child: DropdownButtonFormField<String>(
                 value: selectedMeal,
-                items: const [
+                items: [
                   DropdownMenuItem(
-                      value: "Before Meal", child: Text("Before Meal")),
-                  DropdownMenuItem(
-                      value: "After Meal", child: Text("After Meal")),
+                      value: "Before Meal", child: Text("${AppText.beforeMeal(lang)}")),
+                   DropdownMenuItem(
+                      value: "After Meal", child: Text("${AppText.afterMeal(lang)}")),
                 ],
                 onChanged: (val) {
                   setState(() {
@@ -88,7 +89,7 @@ class _AddPageState extends State<AddPage> {
               child: ListTile(
                 leading: const Icon(Icons.access_time),
                 title: Text(
-                  selectedTime ?? "Select Time",
+                  selectedTime ?? "${AppText.selectTime(lang)}",
                   style: TextStyle(
                     color: selectedTime == null
                         ? Colors.grey
@@ -117,7 +118,7 @@ class _AddPageState extends State<AddPage> {
               child: ListTile(
                 leading: const Icon(Icons.calendar_today),
                 title: Text(
-                  selectedDate ?? "Select Date",
+                  selectedDate ?? "${AppText.selectDate(lang)}",
                   style: TextStyle(
                     color: selectedDate == null
                         ? Colors.grey
@@ -156,7 +157,7 @@ class _AddPageState extends State<AddPage> {
                       selectedDate == null) {
 
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Fill all fields")),
+                      SnackBar(content: Text(AppText.fillAllFields(lang))),
                     );
                     return;
                   }
@@ -164,7 +165,7 @@ class _AddPageState extends State<AddPage> {
                   // 🔥 HERE you will add Firebase save
 
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Medicine Saved")),
+                     SnackBar(content: Text(AppText.saved(lang))),
                   );
 
                   Navigator.pop(context);
@@ -176,8 +177,8 @@ class _AddPageState extends State<AddPage> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
-                  "Save Medicine",
+                child:  Text(
+                  "${AppText.saveMedicine(lang)}",
                   style: TextStyle(fontSize: 16),
                 ),
               ),

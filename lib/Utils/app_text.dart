@@ -62,4 +62,54 @@ class AppText {
         ? "প্রোফাইল ছবি আপডেট করুন"
         : "Update Profile Picture";
   }
+  //add page
+  static String addMedicine(String lang) {
+    return lang == 'bn' ? "ওষুধ যোগ করুন" : "Add Medicine";
+  }
+
+  static String addMedicineDetails(String lang) {
+    return lang == 'bn'
+        ? "আপনার ওষুধের তথ্য দিন"
+        : "Add your medicine details";
+  }
+
+  static String medicineName(String lang) {
+    return lang == 'bn' ? "ওষুধের নাম" : "Medicine Name";
+  }
+
+  static String instruction(String lang) {
+    return lang == 'bn' ? "নির্দেশনা" : "Instruction";
+  }
+
+  static String beforeMeal(String lang) {
+    return lang == 'bn' ? "খাওয়ার আগে" : "Before Meal";
+  }
+
+  static String afterMeal(String lang) {
+    return lang == 'bn' ? "খাওয়ার পরে" : "After Meal";
+  }
+
+  static String selectTime(String lang) {
+    return lang == 'bn' ? "সময় নির্বাচন করুন" : "Select Time";
+  }
+
+  static String selectDate(String lang) {
+    return lang == 'bn' ? "তারিখ নির্বাচন করুন" : "Select Date";
+  }
+
+  static String saveMedicine(String lang) {
+    return lang == 'bn' ? "সংরক্ষণ করুন" : "Save Medicine";
+  }
+
+  static String fillAllFields(String lang) {
+    return lang == 'bn'
+        ? "সব তথ্য পূরণ করুন"
+        : "Fill all fields";
+  }
+
+  static String saved(String lang) {
+    return lang == 'bn'
+        ? "ওষুধ সংরক্ষণ করা হয়েছে"
+        : "Medicine Saved";
+  }
 }
