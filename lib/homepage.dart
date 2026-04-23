@@ -375,9 +375,9 @@ class _HomePageState extends State<HomePage> {
                                               fontWeight:
                                               FontWeight.bold)),
 
-                                      Text(data['meal']),
+                                      Text(AppText.meal(lang, data['meal'])),
 
-                                      Text("Next dose: ${data['time']}",
+                                      Text("${AppText.nextDose(lang)} ${data['time']}",
                                           style: const TextStyle(
                                               color: Colors.orange)),
 

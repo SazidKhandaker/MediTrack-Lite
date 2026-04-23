@@ -161,4 +161,13 @@ class AppText {
   ? "নতুন ওষুধ যোগ করতে + চাপুন"
       : "Tap + to add your medicine";
   }
+  static String meal(String lang, String meal) {
+
+    if (lang == 'bn') {
+      if (meal == "Before Meal") return "খাওয়ার আগে";
+      if (meal == "After Meal") return "খাওয়ার পরে";
+    }
+
+    return meal; // default English
+  }
   }
