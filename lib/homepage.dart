@@ -339,9 +339,30 @@ class _HomePageState extends State<HomePage> {
                                 return Container(
                                   margin: const EdgeInsets.symmetric(vertical: 10),
                                   padding: const EdgeInsets.all(16),
+
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).cardColor,
-                                    borderRadius: BorderRadius.circular(16),
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? const Color(0xFF1E293B) // 🔥 dark card color
+                                        : Colors.white,
+
+                                    borderRadius: BorderRadius.circular(18),
+
+                                    // 🔥 THICK BORDER
+                                    border: Border.all(
+                                      color: Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.greenAccent // dark mode border
+                                          : Colors.green,      // light mode border
+                                      width: 2.2,
+                                    ),
+
+                                    // 🔥 SHADOW
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.08),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
                                   ),
 
                                   child: Column(
@@ -439,8 +460,22 @@ class _HomePageState extends State<HomePage> {
           Text(week,
               style: TextStyle(
                   color: isSelected ? Colors.white : Colors.grey)),
+      Text(
+        "${_getMonthName(selectedDate.month)} ",
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.green
+        ),)
         ],
       ),
     );
+  }
+  String _getMonthName(int month) {
+    const months = [
+      "January","February","March","April","May","June",
+      "July","August","September","October","November","December"
+    ];
+    return months[month - 1];
   }
 }
