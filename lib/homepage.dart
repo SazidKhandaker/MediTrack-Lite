@@ -387,10 +387,52 @@ class _HomePageState extends State<HomePage> {
                                         children: [
 
                                           ElevatedButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                takenStatus[index] = true;
-                                              });
+                                            onPressed: () async {
+
+                                              bool? confirm = await showDialog(
+                                                context: context,
+                                                builder: (context) => AlertDialog(
+                                                  backgroundColor: Colors.green[200],
+                                                  title: const Text("Confirm"),
+                                                  content: const Text("Are you sure you took this medicine?"),
+                                                  actions: [
+                                                    Container(
+
+                                                      child: TextButton(
+
+
+                                                        onPressed: () => Navigator.pop(context, false),
+                                                        child: const Text("No"),
+                                                      ),
+                                                    ),
+                                                    ElevatedButton(
+
+                                                      onPressed: () => Navigator.pop(context, true),
+                                                      child: const Text("Yes"),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+
+                                              if (confirm == true) {
+
+                                                final user = FirebaseAuth.instance.currentUser;
+
+                                                // 🔥 FIREBASE UPDATE
+                                                await FirebaseFirestore.instance
+                                                    .collection('users')
+                                                    .doc(user!.uid)
+                                                    .collection('medicines')
+                                                    .doc(filtered[index].id)
+                                                    .update({
+                                                  "status": true,
+                                                });
+
+                                                // 🔥 UI UPDATE
+                                                setState(() {
+                                                  takenStatus[index] = true;
+                                                });
+                                              }
                                             },
                                             child: Text(AppText.taken(lang)),
                                             style: ElevatedButton.styleFrom(
@@ -400,10 +442,45 @@ class _HomePageState extends State<HomePage> {
                                           const SizedBox(width: 10),
 
                                           ElevatedButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                takenStatus[index] = false;
-                                              });
+                                            onPressed: () async {
+
+                                              bool? confirm = await showDialog(
+
+                                                context: context,
+                                                builder: (context) => AlertDialog(
+                                                  backgroundColor: Colors.red[200],
+                                                  title: const Text("Confirm"),
+                                                  content: const Text("Mark as missed?"),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(context, false),
+                                                      child: const Text("No"),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: () => Navigator.pop(context, true),
+                                                      child: const Text("Yes"),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+
+                                              if (confirm == true) {
+
+                                                final user = FirebaseAuth.instance.currentUser;
+
+                                                await FirebaseFirestore.instance
+                                                    .collection('users')
+                                                    .doc(user!.uid)
+                                                    .collection('medicines')
+                                                    .doc(filtered[index].id)
+                                                    .update({
+                                                  "status": false,
+                                                });
+
+                                                setState(() {
+                                                  takenStatus[index] = false;
+                                                });
+                                              }
                                             },
                                             child: Text(AppText.missed(lang)),
                                             style: ElevatedButton.styleFrom(
