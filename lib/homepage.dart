@@ -67,7 +67,7 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(builder: (_) => page),
     );
   }
-
+  int centerIndex = 15;
   @override
   Widget build(BuildContext context) {
 
@@ -233,19 +233,16 @@ class _HomePageState extends State<HomePage> {
               SizedBox(
                 height: 80,
                 child: ListView.builder(
+                  controller: ScrollController(
+                    initialScrollOffset: centerIndex * 70, // 🔥 auto center
+                  ),
                   scrollDirection: Axis.horizontal,
-                  itemCount: DateTime(
-                    DateTime.now().year,
-                    DateTime.now().month + 1,
-                    0,
-                  ).day,
+                  itemCount: 30,
+
                   itemBuilder: (context, index) {
 
-                    DateTime date = DateTime(
-                      DateTime.now().year,
-                      DateTime.now().month,
-                      index + 1,
-                    );
+                    DateTime date =
+                    DateTime.now().add(Duration(days: index - centerIndex));
 
                     bool isSelected =
                         date.year == selectedDate.year &&
