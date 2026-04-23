@@ -112,4 +112,53 @@ class AppText {
         ? "ওষুধ সংরক্ষণ করা হয়েছে"
         : "Medicine Saved";
   }
-}
+
+
+  // 🔝 Header
+  static String reminder(String lang) {
+  return lang == 'bn'
+  ? "আপনার ওষুধের রিমাইন্ডার"
+      : "Your Medicines Reminder";
+  }
+
+  // 📊 Progress
+  static String progress(String lang) {
+  return lang == 'bn'
+  ? "আজকের অগ্রগতি"
+      : "Today's Progress";
+  }
+
+  // ❌ Empty UI
+  static String noMedicine(String lang) {
+  return lang == 'bn'
+  ? "আজ কোনো ওষুধ যোগ করা হয়নি"
+      : "No Medicines Today";
+  }
+
+  // 🔘 Buttons
+  static String taken(String lang) {
+  return lang == 'bn'
+  ? "গ্রহণ করা হয়েছে"
+      : "Taken";
+  }
+
+  static String missed(String lang) {
+  return lang == 'bn'
+  ? "মিস হয়েছে"
+      : "Missed";
+  }
+
+  // ⏰ Next dose
+  static String nextDose(String lang) {
+  return lang == 'bn'
+  ? "পরবর্তী ডোজ"
+      : "Next dose";
+  }
+
+  // ➕ Add hint
+  static String addMedicineHint(String lang) {
+  return lang == 'bn'
+  ? "নতুন ওষুধ যোগ করতে + চাপুন"
+      : "Tap + to add your medicine";
+  }
+  }

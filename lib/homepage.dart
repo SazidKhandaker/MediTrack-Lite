@@ -1,12 +1,13 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:meditrack/bottomnavigation/profile/profilepage.dart' show ProfilePage;
-import 'package:meditrack/bottomnavigation/calendar_page.dart' show CalendarPage;
-import 'bottomnavigation/AddPage.dart' show AddPage;
-import 'bottomnavigation/Listpage.dart' show ListPage;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:meditrack/Utils/app_text.dart' show AppText;
+
+import 'package:meditrack/bottomnavigation/profile/profilepage.dart';
+import 'package:meditrack/bottomnavigation/calendar_page.dart';
+import 'bottomnavigation/AddPage.dart';
+import 'bottomnavigation/Listpage.dart';
+ // 🔥 language file
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,39 +17,28 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int selectedIndex = 1;
-  List medicines = [];
 
-  Map<int, bool> takenStatus = {}; // 🔥 taken/missed
+  DateTime selectedDate = DateTime.now();
+  Map<int, bool> takenStatus = {};
 
-  @override
-  void initState() {
-    super.initState();
-    fetchMedicine("paracetamol");
+  // 🔥 Firebase stream
+  Stream<QuerySnapshot> getMedicines() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('medicines')
+        .snapshots();
   }
 
-  Future<void> fetchMedicine(String name) async {
-    final url =
-        "https://api.fda.gov/drug/label.json?search=$name&limit=5";
-
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        medicines = data['results'] ?? [];
-      });
-    }
-  }
-
-  // 🔥 progress
-  double getProgress() {
-    if (medicines.isEmpty) return 0;
+  // 🔥 progress calc
+  double getProgress(List docs) {
+    if (docs.isEmpty) return 0;
     int taken = takenStatus.values.where((e) => e).length;
-    return taken / medicines.length;
+    return taken / docs.length;
   }
 
-  // 🔥 NAVIGATION
   void navigateTo(int index) {
     Widget page;
 
@@ -80,19 +70,20 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    final lang = Localizations.localeOf(context).languageCode;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
-      // 🔥 NAV BAR (unchanged)
+      // 🔻 Bottom nav SAME
       bottomNavigationBar: Container(
         height: 80,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius:
           const BorderRadius.vertical(top: Radius.circular(25)),
-          boxShadow: [
-            BoxShadow(color: Colors.black12, blurRadius: 10)
-          ],
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -116,10 +107,7 @@ class _HomePageState extends State<HomePage> {
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    colors: [
-                      Color(0xFF2E8B57),
-                      Color(0xFF4CAF50),
-                    ],
+                    colors: [Color(0xFF2E8B57), Color(0xFF4CAF50)],
                   ),
                 ),
                 child: const Icon(Icons.add, color: Colors.white),
@@ -131,307 +119,329 @@ class _HomePageState extends State<HomePage> {
               child: const Icon(Icons.list_alt, color: Colors.grey),
             ),
 
-    GestureDetector(
-    onTap: () async {
-    await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => const ProfilePage()),
-    );
+            // 🔥 PROFILE CLICK FIXED
+            GestureDetector(
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfilePage()),
+                );
+                setState(() {});
+              },
+              child: StreamBuilder<User?>(
+                stream: FirebaseAuth.instance.userChanges(),
+                builder: (context, snapshot) {
 
-    setState(() {}); // 🔥 refresh homepage
-    },
-    child: Builder(
-    builder: (context) {
-    final user = FirebaseAuth.instance.currentUser;
+                  final user = snapshot.data;
 
-    return CircleAvatar(
-    radius: 20,
-    backgroundColor: Colors.grey.shade300,
-
-    backgroundImage: user?.photoURL != null
-    ? NetworkImage(
-    user!.photoURL! +
-    "?t=${DateTime.now().millisecondsSinceEpoch}",
-    )
-        : null,
-
-    child: user?.photoURL == null
-    ? const Icon(Icons.person, color: Colors.grey)
-        : null,
-    );
-    },
-    ),
-    ),
+                  return CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.grey.shade300,
+                    backgroundImage: user?.photoURL != null
+                        ? NetworkImage(user!.photoURL! +
+                        "?t=${DateTime.now().millisecondsSinceEpoch}")
+                        : null,
+                    child: user?.photoURL == null
+                        ? const Icon(Icons.person, color: Colors.grey)
+                        : null,
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
 
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        child: Padding(
+          padding: const EdgeInsets.all(16),
 
-                // 🔝 HEADER
-                Row(
-                  mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Your Medicines\nReminder",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                ),
-                    Row(
-                      children: [
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-                        // 🔔 Notification
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(Icons.notifications, color: Colors.white),
-                        ),
+              // 🔝 HEADER
+              Row(
+                mainAxisAlignment:
+                MainAxisAlignment.spaceBetween,
+                children: [
 
-                        const SizedBox(width: 10),
-
-                        // 👤 Profile Avatar
-          GestureDetector(
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProfilePage()),
-              );
-
-              setState(() {}); // 🔥 extra safety
-            },
-            child: StreamBuilder<User?>(
-              stream: FirebaseAuth.instance.userChanges(), // 🔥 FIXED
-              builder: (context, snapshot) {
-
-                final user = snapshot.data;
-
-                return CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.grey.shade300,
-
-                  backgroundImage: user?.photoURL != null
-                      ? NetworkImage(
-                    user!.photoURL!)
-                      : null,
-
-                  child: user?.photoURL == null
-                      ? const Icon(Icons.person, color: Colors.grey)
-                      : null,
-                );
-              },
-            ),
-          ),
-                      ],
-                    )
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                // 📅 DATE (real-time)
-                SizedBox(
-                  height: 80,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 5,
-                    itemBuilder: (context, index) {
-
-                      DateTime date =
-                      DateTime.now().add(Duration(days: index - 1));
-
-                      String day = date.day.toString();
-
-                      String weekDay = [
-                        "Mon","Tue","Wed","Thu","Fri","Sat","Sun"
-                      ][date.weekday - 1];
-
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedIndex = index;
-                          });
-                        },
-                        child: _dateItem(
-                          day,
-                          weekDay,
-                          selectedIndex == index,
-                        ),
-                      );
-                    },
+                  Text(
+                    AppText.reminder(lang),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 15),
+                  Row(
+                    children: [
 
-                // 🔥 PROGRESS
-                const Text("Today's Progress",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.notifications,
+                            color: Colors.white),
+                      ),
 
-                const SizedBox(height: 6),
+                      const SizedBox(width: 10),
 
-                LinearProgressIndicator(
-                  value: getProgress(),
-                  color: Colors.green,
-                  backgroundColor: Colors.grey.shade300,
-                ),
+                      GestureDetector(
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ProfilePage()),
+                          );
+                          setState(() {});
+                        },
+                        child: StreamBuilder<User?>(
+                          stream:
+                          FirebaseAuth.instance.userChanges(),
+                          builder: (context, snapshot) {
 
-                const SizedBox(height: 20),
+                            final user = snapshot.data;
 
-                // 🔥 MEDICINE LIST
-                medicines.isEmpty
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.builder(
-                  shrinkWrap: true,
-                  physics:
-                  const NeverScrollableScrollPhysics(),
-                  itemCount: medicines.length,
+                            return CircleAvatar(
+                              radius: 20,
+                              backgroundColor:
+                              Colors.grey.shade300,
+                              backgroundImage:
+                              user?.photoURL != null
+                                  ? NetworkImage(user!.photoURL!)
+                                  : null,
+                              child: user?.photoURL == null
+                                  ? const Icon(Icons.person,
+                                  color: Colors.grey)
+                                  : null,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // 📅 FULL MONTH CALENDAR
+              SizedBox(
+                height: 80,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: DateTime(
+                    DateTime.now().year,
+                    DateTime.now().month + 1,
+                    0,
+                  ).day,
                   itemBuilder: (context, index) {
 
-                    var item = medicines[index];
+                    DateTime date = DateTime(
+                      DateTime.now().year,
+                      DateTime.now().month,
+                      index + 1,
+                    );
 
-                    String title =
-                        item['openfda']?['brand_name']?[0] ??
-                            "No Name";
+                    bool isSelected =
+                        date.year == selectedDate.year &&
+                            date.month == selectedDate.month &&
+                            date.day == selectedDate.day;
 
-                    String desc =
-                        item['purpose']?[0] ??
-                            "Take after meal";
-
-                    bool isTaken =
-                        takenStatus[index] ?? false;
-
-                    return Container(
-                      margin: EdgeInsets.symmetric(vertical: 10),
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-
-
-                      child: Column(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                        children: [
-
-                          Text(title,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16)),
-
-                          Text(desc,
-                              style:
-                              const TextStyle(color: Colors.grey)),
-
-                          const SizedBox(height: 8),
-
-                          const Text(
-                            "Next dose: 8:00 PM",
-                            style:
-                            TextStyle(color: Colors.orange),
-                          ),
-
-                          const SizedBox(height: 10),
-
-                          Row(
-                            children: [
-
-                              ElevatedButton(
-                                onPressed: () {
-                                  setState(() {
-                                    takenStatus[index] = true;
-                                  });
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                    Colors.green),
-                                child: const Text("Taken"),
-                              ),
-
-                              const SizedBox(width: 10),
-
-                              ElevatedButton(
-                                onPressed: () {
-                                  setState(() {
-                                    takenStatus[index] = false;
-                                  });
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                    Colors.red),
-                                child: const Text("Missed"),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 5),
-
-                          Text(
-                            isTaken
-                                ? "✔ Taken"
-                                : "❌ Not taken",
-                            style: TextStyle(
-                                color: isTaken
-                                    ? Colors.green
-                                    : Colors.red),
-                          )
-                        ],
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedDate = date;
+                        });
+                      },
+                      child: _dateItem(
+                        "${date.day}",
+                        ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+                        [date.weekday % 7],
+                        isSelected,
                       ),
                     );
                   },
                 ),
-              ],
-            ),
+              ),
+
+              const SizedBox(height: 15),
+
+              // 🔥 PROGRESS
+              Text(AppText.progress(lang),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+
+              const SizedBox(height: 6),
+
+              // 🔥 FIREBASE LIST + PROGRESS
+              Expanded(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: getMedicines(),
+                  builder: (context, snapshot) {
+
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    var docs = snapshot.data!.docs;
+
+                    var filtered = docs.where((doc) {
+                      return doc['date'] ==
+                          "${selectedDate.year}-${selectedDate.month}-${selectedDate.day}";
+                    }).toList();
+
+                    return Column(
+                      children: [
+
+                        LinearProgressIndicator(
+                          value: getProgress(filtered),
+                          color: Colors.green,
+                          backgroundColor: Colors.grey.shade300,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // ❌ EMPTY UI
+                        if (filtered.isEmpty)
+                          Expanded(
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment:
+                                MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.medication_outlined,
+                                      size: 80,
+                                      color: Colors.grey),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    AppText.noMedicine(lang),
+                                    style: const TextStyle(
+                                        fontWeight:
+                                        FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+
+                        else
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+
+                                var data = filtered[index];
+
+                                bool isTaken =
+                                    takenStatus[index] ?? false;
+
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 10),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).cardColor,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+
+                                      Text(data['name'],
+                                          style: const TextStyle(
+                                              fontWeight:
+                                              FontWeight.bold)),
+
+                                      Text(data['meal']),
+
+                                      Text("Next dose: ${data['time']}",
+                                          style: const TextStyle(
+                                              color: Colors.orange)),
+
+                                      const SizedBox(height: 10),
+
+                                      Row(
+                                        children: [
+
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                takenStatus[index] = true;
+                                              });
+                                            },
+                                            child: Text(AppText.taken(lang)),
+                                            style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.green),
+                                          ),
+
+                                          const SizedBox(width: 10),
+
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                takenStatus[index] = false;
+                                              });
+                                            },
+                                            child: Text(AppText.missed(lang)),
+                                            style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 5),
+
+                                      Text(
+                                        isTaken
+                                            ? "✔ Taken"
+                                            : "❌ Not taken",
+                                        style: TextStyle(
+                                          color: isTaken
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _dateItem(
-      String day, String week, bool isSelected) {
+  Widget _dateItem(String day, String week, bool isSelected) {
     return Container(
       margin: const EdgeInsets.only(right: 12),
       width: 60,
       decoration: BoxDecoration(
-        color:
-        isSelected ? Colors.pinkAccent : Colors.white,
+        color: isSelected ? Colors.green : Colors.white,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
-        mainAxisAlignment:
-        MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(day,
               style: TextStyle(
                   fontSize: 18,
-                  color: isSelected
-                      ? Colors.white
-                      : Colors.black)),
+                  color: isSelected ? Colors.white : Colors.black)),
           Text(week,
               style: TextStyle(
-                  color: isSelected
-                      ? Colors.white
-                      : Colors.grey)),
+                  color: isSelected ? Colors.white : Colors.grey)),
         ],
       ),
     );
