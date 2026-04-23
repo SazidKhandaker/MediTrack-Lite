@@ -169,7 +169,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     AppText.reminder(lang),
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.primary,
                     ),
@@ -188,7 +188,7 @@ class _HomePageState extends State<HomePage> {
                             color: Colors.white),
                       ),
 
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
 
                       GestureDetector(
                         onTap: () async {
@@ -439,7 +439,7 @@ class _HomePageState extends State<HomePage> {
                                                 backgroundColor: Colors.green),
                                           ),
 
-                                          const SizedBox(width: 10),
+                                           SizedBox(width: 5),
 
                                           ElevatedButton(
                                             onPressed: () async {
@@ -489,7 +489,7 @@ class _HomePageState extends State<HomePage> {
                                         ],
                                       ),
 
-                                      const SizedBox(height: 5),
+                                      const SizedBox(height: 6),
 
                                       Text(
                                         isTaken
