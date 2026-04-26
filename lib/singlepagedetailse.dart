@@ -54,12 +54,16 @@ class MedicineDetailPage extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: [
                         Colors.yellow.shade400,
-                        Colors.orange.shade300
+                        Colors.orange.shade300,
                       ],
                     ),
                   ),
-                  child: const Icon(Icons.medication,
-                      size: 70, color: Colors.white),
+                  child: ClipOval(
+                    child: Image.asset(
+                      "assets/images/medicine.png",
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
               ),
 
