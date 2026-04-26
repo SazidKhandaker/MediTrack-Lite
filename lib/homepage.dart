@@ -5,6 +5,7 @@ import 'package:meditrack/Utils/app_text.dart' show AppText;
 
 import 'package:meditrack/bottomnavigation/profile/profilepage.dart';
 import 'package:meditrack/bottomnavigation/calendar_page.dart';
+import 'package:meditrack/singlepagedetailse.dart' show MedicineDetailPage;
 import 'bottomnavigation/AddPage.dart';
 import 'bottomnavigation/Listpage.dart';
  // 🔥 language file
@@ -371,129 +372,164 @@ class _HomePageState extends State<HomePage> {
                                     ],
                                   ),
 
-                                  child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                    children: [
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children:[
 
-                                      Text(data['name'],
-                                          style: const TextStyle(
-                                              fontWeight:
-                                              FontWeight.bold)),
 
-                                      Text(AppText.meal(lang, data['meal'])),
+                                      Column(
 
-                                      Text("${AppText.nextDose(lang)} ${data['time']}",
-                                          style: const TextStyle(
-                                              color: Colors.orange)),
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
 
-                                      const SizedBox(height: 10),
+                                        Text(data['name'],
+                                            style: const TextStyle(
+                                                fontWeight:
+                                                FontWeight.bold)),
 
-                                      Row(
-                                        children: [
+                                        Text(AppText.meal(lang, data['meal'])),
 
-                                          ElevatedButton(
-                                          onPressed: () async {
+                                        Text("${AppText.nextDose(lang)} ${data['time']}",
+                                            style: const TextStyle(
+                                                color: Colors.orange)),
 
-                                bool? confirm = await showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                backgroundColor: Colors.green[200],
-                                title: const Text("Confirm"),
-                                content: const Text("Are you sure you took this medicine?"),
-                                actions: [
-                                TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text("No"),
-                                ),
-                                ElevatedButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text("Yes"),
-                                ),
-                                ],
-                                ),
-                                );
+                                        const SizedBox(height: 10),
 
-                                if (confirm == true) {
+                                        Row(
 
-                                final user = FirebaseAuth.instance.currentUser;
 
-                                await FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(user!.uid)
-                                    .collection('medicines')
-                                    .doc(filtered[index].id)
-                                    .update({
-                                "status": true,
-                                });
+                                          children: [
 
-                                // ❌ no setState needed
-                                }
-                                },
-                                            child: Text(AppText.taken(lang)),
-                                            style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.green),
-                                          ),
-
-                                           SizedBox(width: 5),
-
-                                          ElevatedButton(
+                                            ElevatedButton(
                                             onPressed: () async {
 
-                                              bool? confirm = await showDialog(
-                                                context: context,
-                                                builder: (context) => AlertDialog(
-                                                  backgroundColor: Colors.red[200],
-                                                  title: const Text("Confirm"),
-                                                  content: const Text("Mark as missed?"),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () => Navigator.pop(context, false),
-                                                      child: const Text("No"),
-                                                    ),
-                                                    ElevatedButton(
-                                                      onPressed: () => Navigator.pop(context, true),
-                                                      child: const Text("Yes"),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
+                                                                    bool? confirm = await showDialog(
+                                                                    context: context,
+                                                                    builder: (context) => AlertDialog(
+                                                                    backgroundColor: Colors.green[200],
+                                                                    title: const Text("Confirm"),
+                                                                    content: const Text("Are you sure you took this medicine?"),
+                                                                    actions: [
+                                                                    TextButton(
+                                                                    onPressed: () => Navigator.pop(context, false),
+                                                                    child: const Text("No"),
+                                                                    ),
+                                                                    ElevatedButton(
+                                                                    onPressed: () => Navigator.pop(context, true),
+                                                                    child: const Text("Yes"),
+                                                                    ),
+                                                                    ],
+                                                                    ),
+                                                                    );
 
-                                              if (confirm == true) {
+                                                                    if (confirm == true) {
 
-                                                final user = FirebaseAuth.instance.currentUser;
+                                                                    final user = FirebaseAuth.instance.currentUser;
 
-                                                await FirebaseFirestore.instance
-                                                    .collection('users')
-                                                    .doc(user!.uid)
-                                                    .collection('medicines')
-                                                    .doc(filtered[index].id)
-                                                    .update({
-                                                  "status": false,
-                                                });
-                                              }
-                                            },
-                                            child: Text(AppText.missed(lang)),
-                                            style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.red),
-                                          ),
-                                        ],
-                                      ),
+                                                                    await FirebaseFirestore.instance
+                                                                              .collection('users')
+                                                                              .doc(user!.uid)
+                                                                              .collection('medicines')
+                                                                              .doc(filtered[index].id)
+                                                                              .update({
+                                                                    "status": true,
+                                                                    });
 
-                                      const SizedBox(height: 6),
+                                                                    // ❌ no setState needed
+                                                                    }
+                                                                    },
+                                              child: Text(AppText.taken(lang)),
+                                              style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.green),
+                                            ),
 
-                                      Text(
-                                        isTaken
-                                            ? "✔ Taken"
-                                            : "❌ Not taken",
-                                        style: TextStyle(
-                                          color: isTaken
-                                              ? Colors.green
-                                              : Colors.red,
+                                             SizedBox(width: 5),
+
+                                            ElevatedButton(
+                                              onPressed: () async {
+
+                                                bool? confirm = await showDialog(
+                                                  context: context,
+                                                  builder: (context) => AlertDialog(
+                                                    backgroundColor: Colors.red[200],
+                                                    title: const Text("Confirm"),
+                                                    content: const Text("Mark as missed?"),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(context, false),
+                                                        child: const Text("No"),
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () => Navigator.pop(context, true),
+                                                        child: const Text("Yes"),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+
+                                                if (confirm == true) {
+
+                                                  final user = FirebaseAuth.instance.currentUser;
+
+                                                  await FirebaseFirestore.instance
+                                                      .collection('users')
+                                                      .doc(user!.uid)
+                                                      .collection('medicines')
+                                                      .doc(filtered[index].id)
+                                                      .update({
+                                                    "status": false,
+                                                  });
+                                                }
+                                              },
+                                              child: Text(AppText.missed(lang)),
+                                              style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red),
+                                            ),
+
+                                          ],
                                         ),
-                                      )
+
+                                        const SizedBox(height: 6),
+
+                                        Text(
+                                          isTaken
+                                              ? "✔ Taken"
+                                              : "❌ Not taken",
+                                          style: TextStyle(
+                                            color: isTaken
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => MedicineDetailPage(),
+                                            ),
+                                          );
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(
+                                        Icons.edit,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  ),
+
+
                                     ],
                                   ),
+
+
                                 );
                               },
                             ),
