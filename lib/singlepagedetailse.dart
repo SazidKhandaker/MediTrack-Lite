@@ -1,10 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MedicineDetailPage extends StatelessWidget {
-  const MedicineDetailPage({super.key});
+  final DocumentSnapshot data;
+
+  const MedicineDetailPage({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
+
+    final map = data.data() as Map<String, dynamic>? ?? {};
+
+    // 🌐 Language detect
+    final lang = Localizations.localeOf(context).languageCode;
+
+    String mealText = map['meal'] ?? "";
+    String name = map['name'] ?? "Medicine";
+    String time = map['time'] ?? "--:--";
+
+    // 🇧🇩 Bangla support
+    String getMealText() {
+      if (lang == "bn") {
+        if (mealText == "Before Meal") return "খাবারের আগে";
+        if (mealText == "After Meal") return "খাবারের পরে";
+      }
+      return mealText;
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
 
@@ -21,11 +43,14 @@ class MedicineDetailPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
 
-                  const Icon(Icons.arrow_back_ios),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: const Icon(Icons.arrow_back_ios),
+                  ),
 
-                  const Text(
-                    "Meglitinides",
-                    style: TextStyle(
+                  Text(
+                    name,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -44,7 +69,7 @@ class MedicineDetailPage extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              // 💊 BIG ICON
+              // 💊 IMAGE
               Center(
                 child: Container(
                   height: 140,
@@ -73,15 +98,14 @@ class MedicineDetailPage extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.pink.shade200,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    "Remove",
-                    style: TextStyle(color: Colors.white),
+                  child: Text(
+                    lang == "bn" ? "ডিলিট" : "Remove",
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
@@ -89,9 +113,9 @@ class MedicineDetailPage extends StatelessWidget {
               const SizedBox(height: 20),
 
               // 📌 TITLE
-              const Text(
-                "Meglitinides",
-                style: TextStyle(
+              Text(
+                name,
+                style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
@@ -99,9 +123,11 @@ class MedicineDetailPage extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              const Text(
-                "They bind to an ATP-dependent (KATP) channel on the cell membrane of pancreatic beta cells...",
-                style: TextStyle(color: Colors.grey),
+              Text(
+                lang == "bn"
+                    ? "ওষুধের বিস্তারিত তথ্য"
+                    : "Medicine details",
+                style: const TextStyle(color: Colors.grey),
               ),
 
               const SizedBox(height: 20),
@@ -109,30 +135,27 @@ class MedicineDetailPage extends StatelessWidget {
               // 🍽 TAGS
               Row(
                 children: [
-                  _tag("Before Breakfast", Colors.orange),
+                  _tag(getMealText(), Colors.orange),
                   const SizedBox(width: 10),
-                  _tag("Before Dinner", Colors.green),
+                  _tag(time, Colors.green),
                 ],
               ),
 
               const SizedBox(height: 20),
 
-              // 📊 INFO CARDS
+              // 📊 INFO
               Row(
                 children: [
-                  Expanded(child: _infoCard("Amount", "2 pill/Day")),
+                  Expanded(child: _infoCard(
+                      lang == "bn" ? "সময়" : "Time",
+                      time)),
                   const SizedBox(width: 10),
-                  Expanded(child: _infoCard("This Month", "3/31 taken")),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-
-              Row(
-                children: [
-                  Expanded(child: _infoCard("Cause", "Diabetes")),
-                  const SizedBox(width: 10),
-                  Expanded(child: _infoCard("Cap Size", "150 mg")),
+                  Expanded(child: _infoCard(
+                      lang == "bn" ? "স্ট্যাটাস" : "Status",
+                      map['status'] == true
+                          ? (lang == "bn" ? "নেওয়া হয়েছে" : "Taken")
+                          : (lang == "bn" ? "নেওয়া হয়নি" : "Not Taken")
+                  )),
                 ],
               ),
 
@@ -151,10 +174,10 @@ class MedicineDetailPage extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    "Edit Schedule",
-                    style: TextStyle(
+                    lang == "bn" ? "সময় পরিবর্তন" : "Edit Schedule",
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -168,7 +191,6 @@ class MedicineDetailPage extends StatelessWidget {
     );
   }
 
-  // 🔹 TAG WIDGET
   Widget _tag(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -183,7 +205,6 @@ class MedicineDetailPage extends StatelessWidget {
     );
   }
 
-  // 🔹 INFO CARD
   Widget _infoCard(String title, String value) {
     return Container(
       padding: const EdgeInsets.all(14),
