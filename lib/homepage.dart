@@ -19,7 +19,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   DateTime selectedDate = DateTime.now();
-  Map<int, bool> takenStatus = {};
 
   // 🔥 Firebase stream
   Stream<QuerySnapshot> getMedicines() {
@@ -35,10 +34,14 @@ class _HomePageState extends State<HomePage> {
   // 🔥 progress calc
   double getProgress(List docs) {
     if (docs.isEmpty) return 0;
-    int taken = takenStatus.values.where((e) => e).length;
+
+    int taken = docs.where((d) {
+      final data = d.data() as Map<String, dynamic>;
+      return data['status'] == true;
+    }).length;
+
     return taken / docs.length;
   }
-
   void navigateTo(int index) {
     Widget page;
 
@@ -335,9 +338,9 @@ class _HomePageState extends State<HomePage> {
                               itemBuilder: (context, index) {
 
                                 var data = filtered[index];
+                                final map = data.data() as Map<String, dynamic>;
+                                bool isTaken = map['status'] == true;
 
-                                bool isTaken =
-                                    takenStatus[index] ?? false;
 
                                 return Container(
                                   margin: const EdgeInsets.symmetric(vertical: 10),
@@ -390,53 +393,43 @@ class _HomePageState extends State<HomePage> {
                                         children: [
 
                                           ElevatedButton(
-                                            onPressed: () async {
+                                          onPressed: () async {
 
-                                              bool? confirm = await showDialog(
-                                                context: context,
-                                                builder: (context) => AlertDialog(
-                                                  backgroundColor: Colors.green[200],
-                                                  title: const Text("Confirm"),
-                                                  content: const Text("Are you sure you took this medicine?"),
-                                                  actions: [
-                                                    Container(
+                                bool? confirm = await showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                backgroundColor: Colors.green[200],
+                                title: const Text("Confirm"),
+                                content: const Text("Are you sure you took this medicine?"),
+                                actions: [
+                                TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text("No"),
+                                ),
+                                ElevatedButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text("Yes"),
+                                ),
+                                ],
+                                ),
+                                );
 
-                                                      child: TextButton(
+                                if (confirm == true) {
 
+                                final user = FirebaseAuth.instance.currentUser;
 
-                                                        onPressed: () => Navigator.pop(context, false),
-                                                        child: const Text("No"),
-                                                      ),
-                                                    ),
-                                                    ElevatedButton(
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(user!.uid)
+                                    .collection('medicines')
+                                    .doc(filtered[index].id)
+                                    .update({
+                                "status": true,
+                                });
 
-                                                      onPressed: () => Navigator.pop(context, true),
-                                                      child: const Text("Yes"),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-
-                                              if (confirm == true) {
-
-                                                final user = FirebaseAuth.instance.currentUser;
-
-                                                // 🔥 FIREBASE UPDATE
-                                                await FirebaseFirestore.instance
-                                                    .collection('users')
-                                                    .doc(user!.uid)
-                                                    .collection('medicines')
-                                                    .doc(filtered[index].id)
-                                                    .update({
-                                                  "status": true,
-                                                });
-
-                                                // 🔥 UI UPDATE
-                                                setState(() {
-                                                  takenStatus[index] = true;
-                                                });
-                                              }
-                                            },
+                                // ❌ no setState needed
+                                }
+                                },
                                             child: Text(AppText.taken(lang)),
                                             style: ElevatedButton.styleFrom(
                                                 backgroundColor: Colors.green),
@@ -448,7 +441,6 @@ class _HomePageState extends State<HomePage> {
                                             onPressed: () async {
 
                                               bool? confirm = await showDialog(
-
                                                 context: context,
                                                 builder: (context) => AlertDialog(
                                                   backgroundColor: Colors.red[200],
@@ -478,10 +470,6 @@ class _HomePageState extends State<HomePage> {
                                                     .doc(filtered[index].id)
                                                     .update({
                                                   "status": false,
-                                                });
-
-                                                setState(() {
-                                                  takenStatus[index] = false;
                                                 });
                                               }
                                             },
