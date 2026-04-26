@@ -201,169 +201,235 @@ class MedicineDetailPage extends StatelessWidget {
       backgroundColor: Colors.transparent,
 
       builder: (context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-          ),
-
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-              left: 20,
-              right: 20,
-              top: 15,
+        return SafeArea(
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFFF9FAFB), // 🔥 soft background
+              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
             ),
-
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-
-                  const SizedBox(height: 10),
-
-                  Text(AppText.editSchedule(lang),
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
-
-                  const SizedBox(height: 20),
-
-                  // NAME
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: AppText.medicineName(lang),
-                      prefixIcon: const Icon(Icons.medication, color: Colors.green),
-                      filled: true,
-                      fillColor: const Color(0xFFF5F7FA),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
+          
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 20,
+                right: 20,
+                top: 15,
+              ),
+          
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+          
+                    // 🔘 HANDLE
+                    Container(
+                      width: 50,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  // MEAL
-                  DropdownButtonFormField<String>(
-                    value: selectedMeal,
-                    items: [
-                      DropdownMenuItem(
-                        value: "Before Meal",
-                        child: Text(AppText.beforeMeal(lang)),
+          
+                    const SizedBox(height: 15),
+          
+                    // 🔥 TITLE
+                    Text(
+                      AppText.editSchedule(lang),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
-                      DropdownMenuItem(
-                        value: "After Meal",
-                        child: Text(AppText.afterMeal(lang)),
-                      ),
-                    ],
-                    onChanged: (val) => selectedMeal = val!,
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  // TIME
-                  ListTile(
-                    tileColor: const Color(0xFFF5F7FA),
-                    leading: const Icon(Icons.access_time, color: Colors.blue),
-                    title: Text(selectedTime),
-                    subtitle: Text(AppText.selectTime(lang)),
-                    onTap: () async {
-                      TimeOfDay? picked = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
-                      );
-                      if (picked != null) {
-                        selectedTime = picked.format(context);
-                      }
-                    },
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // DATE
-                  ListTile(
-                    tileColor: const Color(0xFFF5F7FA),
-                    leading: const Icon(Icons.calendar_today, color: Colors.red),
-                    title: Text(selectedDate),
-                    subtitle: Text(AppText.selectDate(lang)),
-                    onTap: () async {
-                      DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime(2100),
-                      );
-
-                      if (picked != null) {
-                        selectedDate =
-                        "${picked.year}-${picked.month}-${picked.day}";
-                      }
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // BUTTON
-                  Row(
-                    children: [
-
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text("AppText.cancel(lang)"),
+                    ),
+          
+                    const SizedBox(height: 20),
+          
+                    // 💊 NAME FIELD
+                    TextField(
+                      controller: nameController,
+                      style: const TextStyle(color: Colors.black),
+                      decoration: InputDecoration(
+                        labelText: AppText.medicineName(lang),
+                        prefixIcon: const Icon(
+                          Icons.medication,
+                          color: Color(0xFF2E7D32), // green
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFF1F5F9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
                         ),
                       ),
-
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-
-                            final user = FirebaseAuth.instance.currentUser;
-
-                            await FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(user!.uid)
-                                .collection('medicines')
-                                .doc(data.id)
-                                .update({
-                              "name": nameController.text,
-                              "meal": selectedMeal,
-                              "time": selectedTime,
-                              "date": selectedDate,
-                            });
-
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Updated successfully"),
-                              ),
-                            );
-                          },
-
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              borderRadius: BorderRadius.circular(14),
+                    ),
+          
+                    const SizedBox(height: 15),
+          
+                    // 🍽 MEAL DROPDOWN
+                    DropdownButtonFormField<String>(
+                      value: selectedMeal,
+                      items: [
+                        DropdownMenuItem(
+                          value: "Before Meal",
+                          child: Text(AppText.beforeMeal(lang)),
+                        ),
+                        DropdownMenuItem(
+                          value: "After Meal",
+                          child: Text(AppText.afterMeal(lang),style: TextStyle(color: Colors.black),),
+                        ),
+                      ],
+                      onChanged: (val) => selectedMeal = val!,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(
+                          Icons.restaurant,
+                          color: Color(0xFFF57C00), // orange
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFF1F5F9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+          
+                    const SizedBox(height: 15),
+          
+                    // ⏰ TIME
+                    ListTile(
+                      tileColor: const Color(0xFFF1F5F9),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      leading: const Icon(
+                        Icons.access_time,
+                        color: Color(0xFF1976D2), // blue
+                      ),
+                      title: Text(
+                        selectedTime,
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      subtitle: Text(AppText.selectTime(lang)),
+                      onTap: () async {
+                        TimeOfDay? picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (picked != null) {
+                          selectedTime = picked.format(context);
+                        }
+                      },
+                    ),
+          
+                    const SizedBox(height: 10),
+          
+                    // 📅 DATE
+                    ListTile(
+                      tileColor: const Color(0xFFF1F5F9),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      leading: const Icon(
+                        Icons.calendar_today,
+                        color: Color(0xFFD32F2F), // red
+                      ),
+                      title: Text(
+                        selectedDate,
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      subtitle: Text(AppText.selectDate(lang)),
+                      onTap: () async {
+                        DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2100),
+                        );
+          
+                        if (picked != null) {
+                          selectedDate =
+                          "${picked.year}-${picked.month}-${picked.day}";
+                        }
+                      },
+                    ),
+          
+                    const SizedBox(height: 20),
+          
+                    // 🔥 BUTTON ROW
+                    Row(
+                      children: [
+          
+                        // ❌ CANCEL
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              cancel(lang),
+                              style: const TextStyle(color: Colors.grey),
                             ),
-                            child: Center(
-                              child: Text(
-                                AppText.save(lang),
-                                style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+          
+                        const SizedBox(width: 10),
+          
+                        // ✅ UPDATE
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+          
+                              final user = FirebaseAuth.instance.currentUser;
+          
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(user!.uid)
+                                  .collection('medicines')
+                                  .doc(data.id)
+                                  .update({
+                                "name": nameController.text,
+                                "meal": selectedMeal,
+                                "time": selectedTime,
+                                "date": selectedDate,
+                              });
+          
+                              Navigator.pop(context);
+                              Navigator.pop(context);
+          
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    lang == 'bn'
+                                        ? "আপডেট সফল হয়েছে"
+                                        : "Updated successfully",
+                                  ),
+                                ),
+                              );
+                            },
+          
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2E7D32),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  AppText.save(lang),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-                ],
+                      ],
+                    ),
+          
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ),
@@ -397,5 +463,8 @@ class MedicineDetailPage extends StatelessWidget {
         ],
       ),
     );
+  }
+  static String cancel(String lang) {
+    return lang == 'bn' ? "বাতিল" : "Cancel";
   }
 }

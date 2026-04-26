@@ -204,11 +204,11 @@ class AppText {
   static String editSchedule(String lang) {
     return lang == 'bn' ? "সময় পরিবর্তন" : "Edit Schedule";
   }
-  static String cancel(String lang) {
-    return lang == 'bn' ? "বাতিল" : "Cancel";
-  }
+
   static String history(String lang){
     return lang== 'bn'?    "ইতিহাস" : "history" ;
   }
-
+  static String cancel(String lang) {
+    return lang == 'bn' ? "বাতিল" : "Cancel";
+  }
   }
