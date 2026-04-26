@@ -166,15 +166,18 @@ class _HomePageState extends State<HomePage> {
                 MainAxisAlignment.spaceBetween,
                 children: [
 
-                  Text(
-                    AppText.reminder(lang),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
+                  Expanded(
+                    child: Text(
+                      AppText.reminder(lang),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-
+                   SizedBox(width: 8),
                   Row(
                     children: [
 
@@ -185,10 +188,10 @@ class _HomePageState extends State<HomePage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(Icons.notifications,
-                            color: Colors.white),
+                            color: Colors.white,size: 20,),
                       ),
 
-                      const SizedBox(width: 8),
+                       SizedBox(width: 6),
 
                       GestureDetector(
                         onTap: () async {
@@ -207,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                             final user = snapshot.data;
 
                             return CircleAvatar(
-                              radius: 20,
+                              radius: 18,
                               backgroundColor:
                               Colors.grey.shade300,
                               backgroundImage:
