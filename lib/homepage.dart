@@ -81,78 +81,80 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       // 🔻 Bottom nav SAME
-      bottomNavigationBar: Container(
-        height: 80,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius:
-          const BorderRadius.vertical(top: Radius.circular(25)),
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-
-            GestureDetector(
-              onTap: () => navigateTo(0),
-              child: const Icon(Icons.grid_view, color: Colors.blue),
-            ),
-
-            GestureDetector(
-              onTap: () => navigateTo(1),
-              child: const Icon(Icons.calendar_today, color: Colors.grey),
-            ),
-
-            GestureDetector(
-              onTap: () => navigateTo(2),
-              child: Container(
-                height: 60,
-                width: 60,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF2E8B57), Color(0xFF4CAF50)],
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(25)),
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+        
+              GestureDetector(
+                onTap: () => navigateTo(0),
+                child: const Icon(Icons.grid_view, color: Colors.blue),
+              ),
+        
+              GestureDetector(
+                onTap: () => navigateTo(1),
+                child: const Icon(Icons.calendar_today, color: Colors.grey),
+              ),
+        
+              GestureDetector(
+                onTap: () => navigateTo(2),
+                child: Container(
+                  height: 60,
+                  width: 60,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF2E8B57), Color(0xFF4CAF50)],
+                    ),
                   ),
+                  child: const Icon(Icons.add, color: Colors.white),
                 ),
-                child: const Icon(Icons.add, color: Colors.white),
               ),
-            ),
-
-            GestureDetector(
-              onTap: () => navigateTo(3),
-              child: const Icon(Icons.list_alt, color: Colors.grey),
-            ),
-
-            // 🔥 PROFILE CLICK FIXED
-            GestureDetector(
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfilePage()),
-                );
-                setState(() {});
-              },
-              child: StreamBuilder<User?>(
-                stream: FirebaseAuth.instance.userChanges(),
-                builder: (context, snapshot) {
-
-                  final user = snapshot.data;
-
-                  return CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.grey.shade300,
-                    backgroundImage: user?.photoURL != null
-                        ? NetworkImage(user!.photoURL! +
-                        "?t=${DateTime.now().millisecondsSinceEpoch}")
-                        : null,
-                    child: user?.photoURL == null
-                        ? const Icon(Icons.person, color: Colors.grey)
-                        : null,
+        
+              GestureDetector(
+                onTap: () => navigateTo(3),
+                child: const Icon(Icons.list_alt, color: Colors.grey),
+              ),
+        
+              // 🔥 PROFILE CLICK FIXED
+              GestureDetector(
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfilePage()),
                   );
+                  setState(() {});
                 },
+                child: StreamBuilder<User?>(
+                  stream: FirebaseAuth.instance.userChanges(),
+                  builder: (context, snapshot) {
+        
+                    final user = snapshot.data;
+        
+                    return CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.grey.shade300,
+                      backgroundImage: user?.photoURL != null
+                          ? NetworkImage(user!.photoURL! +
+                          "?t=${DateTime.now().millisecondsSinceEpoch}")
+                          : null,
+                      child: user?.photoURL == null
+                          ? const Icon(Icons.person, color: Colors.grey)
+                          : null,
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
 

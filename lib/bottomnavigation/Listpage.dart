@@ -233,7 +233,9 @@ class _ListPageState extends State<ListPage> {
                                   Text(map['name'] ?? ""),
 
                                   Text(
-                                    map['date'] ?? "",
+                                    lang == "bn"
+                                        ? DateHelper.formatBanglaDate(map['date'] ?? "")
+                                        : map['date'] ?? "",
                                     style: const TextStyle(
                                         color: Colors.grey),
                                   ),
