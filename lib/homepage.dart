@@ -67,7 +67,7 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(builder: (_) => page),
     );
   }
-  int centerIndex = 15;
+  int centerIndex = 50;
   @override
   Widget build(BuildContext context) {
 
@@ -230,41 +230,38 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 20),
 
               // 📅 FULL MONTH CALENDAR
-              SizedBox(
-                height: 80,
-                child: ListView.builder(
-                  controller: ScrollController(
-                    initialScrollOffset: centerIndex * 70, // 🔥 auto center
-                  ),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 30,
-
-                  itemBuilder: (context, index) {
-
-                    DateTime date =
-                    DateTime.now().add(Duration(days: index - centerIndex));
-
-                    bool isSelected =
-                        date.year == selectedDate.year &&
-                            date.month == selectedDate.month &&
-                            date.day == selectedDate.day;
-
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedDate = date;
-                        });
-                      },
-                      child: _dateItem(
-                        "${date.day}",
-                        ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
-                        [date.weekday % 7],
-                        isSelected,
-                      ),
-                    );
-                  },
+            SizedBox(
+              height: 90,
+              child: ListView.builder(
+                controller: ScrollController(
+                  initialScrollOffset: centerIndex * 72,
                 ),
+                scrollDirection: Axis.horizontal,
+                itemCount: 100,
+                itemBuilder: (context, index) {
+
+                  DateTime date =
+                  DateTime.now().add(Duration(days: index - centerIndex));
+
+                  bool isSelected =
+                      date.year == selectedDate.year &&
+                          date.month == selectedDate.month &&
+                          date.day == selectedDate.day;
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedDate = date;
+                      });
+                    },
+                    child: _dateItem(
+                      date,
+                      isSelected,
+                    ),
+                  );
+                },
               ),
+            ),
 
               const SizedBox(height: 15),
 
@@ -287,8 +284,7 @@ class _HomePageState extends State<HomePage> {
                     var docs = snapshot.data!.docs;
 
                     var filtered = docs.where((doc) {
-                      return doc['date'] ==
-                          "${selectedDate.year}-${selectedDate.month}-${selectedDate.day}";
+                      return doc['date'] == formatDate(selectedDate);
                     }).toList();
 
                     return Column(
@@ -519,31 +515,52 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _dateItem(String day, String week, bool isSelected) {
+  Widget  _dateItem(DateTime date, bool isSelected) {
     return Container(
-      margin: const EdgeInsets.only(right: 12),
-      width: 60,
+      margin: const EdgeInsets.only(right: 10),
+      width: 65,
       decoration: BoxDecoration(
         color: isSelected ? Colors.green : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isSelected ? Colors.green : Colors.grey.shade300,
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(day,
-              style: TextStyle(
-                  fontSize: 18,
-                  color: isSelected ? Colors.white : Colors.black)),
-          Text(week,
-              style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey)),
-      Text(
-        "${_getMonthName(selectedDate.month)} ",
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.green[200]
-        ),)
+
+          // 📅 DAY
+          Text(
+            "${date.day}",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: isSelected ? Colors.white : Colors.black,
+            ),
+          ),
+
+          // 📅 WEEK
+          Text(
+            ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+            [date.weekday % 7],
+            style: TextStyle(
+              fontSize: 12,
+              color: isSelected ? Colors.white : Colors.grey,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          // 🔥 FIXED MONTH (IMPORTANT)
+          Text(
+            _getMonthName(date.month),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: isSelected ? Colors.white : Colors.green,
+            ),
+          ),
         ],
       ),
     );
@@ -554,5 +571,8 @@ class _HomePageState extends State<HomePage> {
       "July","August","September","October","November","December"
     ];
     return months[month - 1];
+  }
+  String formatDate(DateTime d) {
+    return "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
   }
 }
