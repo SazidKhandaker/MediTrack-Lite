@@ -505,13 +505,17 @@ class _HomePageState extends State<HomePage> {
                                       ],
                                     ),
                                       GestureDetector(
-                                        onTap: () {
+                                        onTap: (){
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                               builder: (_) => MedicineDetailPage(),
                                             ),
                                           );
+
+                                        },
+
+
                                     child: Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
