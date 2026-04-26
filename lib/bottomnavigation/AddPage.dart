@@ -136,8 +136,7 @@ class _AddPageState extends State<AddPage> {
 
                   if (picked != null) {
                     setState(() {
-                      selectedDate =
-                      "${picked.year}-${picked.month}-${picked.day}";
+                      selectedDate = formatDate(picked);
                     });
                   }
                 },
@@ -224,5 +223,8 @@ class _AddPageState extends State<AddPage> {
       ),
       child: child,
     );
+  }
+  String formatDate(DateTime d) {
+    return "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
   }
 }

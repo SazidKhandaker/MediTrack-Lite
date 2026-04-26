@@ -287,7 +287,11 @@ class _HomePageState extends State<HomePage> {
                     var docs = snapshot.data!.docs;
 
                     var filtered = docs.where((doc) {
-                      return doc['date'] == formatDate(selectedDate);
+                      var formatted = formatDate(selectedDate);
+
+                      var altFormat =
+                          "${selectedDate.year}-${selectedDate.month}-${selectedDate.day}";
+                      return doc['date'] == formatted || doc['date'] == altFormat;
                     }).toList();
 
                     return Column(
