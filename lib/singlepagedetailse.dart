@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -45,7 +46,7 @@ class MedicineDetailPage extends StatelessWidget {
 
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios),
+                    child: const Icon(Icons.arrow_back_ios,color: Colors.black,),
                   ),
 
                   Text(
@@ -62,7 +63,7 @@ class MedicineDetailPage extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.more_vert),
+                    child: const Icon(Icons.more_vert,color: Colors.black,),
                   )
                 ],
               ),
@@ -97,17 +98,60 @@ class MedicineDetailPage extends StatelessWidget {
               // 🗑 REMOVE BUTTON
               Align(
                 alignment: Alignment.centerRight,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.pink.shade200,
-                    borderRadius: BorderRadius.circular(20),
+                child: GestureDetector(
+                  onTap: () async {
+
+                    bool? confirm = await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("Confirm"),
+                        content: const Text("Are you sure you want to delete this medicine?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text("Cancel"),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text("Delete"),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+
+                      final user = FirebaseAuth.instance.currentUser;
+
+                      await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user!.uid)
+                          .collection('medicines')
+                          .doc(data.id)
+                          .delete();
+
+                      // 🔥 back to previous page
+                      Navigator.pop(context);
+
+                      // 🔥 success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Deleted successfully")),
+                      );
+                    }
+                  },
+
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.pink.shade200,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      lang == "bn" ? "ডিলিট" : "Remove",
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
-                  child: Text(
-                    lang == "bn" ? "ডিলিট" : "Remove",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
+                )
               ),
 
               const SizedBox(height: 20),
