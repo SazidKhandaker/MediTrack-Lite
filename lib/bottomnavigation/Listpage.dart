@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:meditrack/Utils/app_text.dart';
+import 'package:meditrack/Utils/date_helper.dart';
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
 
@@ -21,13 +22,12 @@ class _ListPageState extends State<ListPage> {
         .snapshots();
   }
 
-  // 🔥 percentage calculation
   Map<String, double> calculateStats(List docs) {
     if (docs.isEmpty) return {"taken": 0, "missed": 0};
 
     int taken = docs.where((d) {
       final data = d.data() as Map<String, dynamic>;
-      return data['status'] == true; // 🔥 safe (null হলে false)
+      return data['status'] == true;
     }).length;
 
     int missed = docs.length - taken;
@@ -41,10 +41,38 @@ class _ListPageState extends State<ListPage> {
   @override
   Widget build(BuildContext context) {
 
+    final lang = Localizations.localeOf(context).languageCode;
+
     return Scaffold(
+
+      // 🔥 APP BAR
       appBar: AppBar(
-        title: const Text("History"),
+        elevation: 0,
         centerTitle: true,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF2E8B57),
+                Color(0xFF4CAF50),
+              ],
+            ),
+          ),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.history, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(
+              AppText.history(lang),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
 
       body: Container(
@@ -78,7 +106,7 @@ class _ListPageState extends State<ListPage> {
 
                 const SizedBox(height: 20),
 
-                // 🔥 LOGO SECTION
+                // 🔥 LOGO
                 Container(
                   height: 140,
                   width: 140,
@@ -99,7 +127,7 @@ class _ListPageState extends State<ListPage> {
 
                 const SizedBox(height: 20),
 
-                // 🔥 GRAPH SECTION
+                // 🔥 GRAPH
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
@@ -108,19 +136,13 @@ class _ListPageState extends State<ListPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("${(takenPercent * 100).toInt()}%",
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold)),
-
-                          Text("${(missedPercent * 100).toInt()}%",
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold)),
+                          Text("${(takenPercent * 100).toInt()}%"),
+                          Text("${(missedPercent * 100).toInt()}%"),
                         ],
                       ),
 
                       const SizedBox(height: 8),
 
-                      // 🔥 progress bar
                       Row(
                         children: [
                           Expanded(
@@ -155,13 +177,18 @@ class _ListPageState extends State<ListPage> {
 
                 // 🔥 LIST
                 Expanded(
-                  child: ListView.builder(
+                  child: docs.isEmpty
+                      ? Center(
+                    child: Text(AppText.noMedicine(lang)),
+                  )
+                      : ListView.builder(
                     itemCount: docs.length,
                     itemBuilder: (context, index) {
 
                       var data = docs[index];
+                      final map =
+                      data.data() as Map<String, dynamic>;
 
-                      final map = data.data() as Map<String, dynamic>;
                       bool isTaken = map['status'] == true;
 
                       return Container(
@@ -172,9 +199,10 @@ class _ListPageState extends State<ListPage> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-
                           border: Border.all(
-                            color: isTaken ? Colors.green : Colors.red,
+                            color: isTaken
+                                ? Colors.green
+                                : Colors.red,
                             width: 2,
                           ),
                         ),
@@ -182,7 +210,6 @@ class _ListPageState extends State<ListPage> {
                         child: Row(
                           children: [
 
-                            // 🔥 LEFT ICON
                             CircleAvatar(
                               backgroundColor: isTaken
                                   ? Colors.green.shade100
@@ -197,26 +224,23 @@ class _ListPageState extends State<ListPage> {
 
                             const SizedBox(width: 12),
 
-                            // 🔥 NAME + DATE
                             Expanded(
                               child: Column(
                                 crossAxisAlignment:
                                 CrossAxisAlignment.start,
                                 children: [
 
-                                  Text(data['name'],
-                                      style: const TextStyle(
-                                          fontWeight:
-                                          FontWeight.bold)),
+                                  Text(map['name'] ?? ""),
 
-                                  Text(data['date'],
-                                      style: const TextStyle(
-                                          color: Colors.grey)),
+                                  Text(
+                                    map['date'] ?? "",
+                                    style: const TextStyle(
+                                        color: Colors.grey),
+                                  ),
                                 ],
                               ),
                             ),
 
-                            // 🔥 STATUS
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 6),
@@ -228,7 +252,9 @@ class _ListPageState extends State<ListPage> {
                                 BorderRadius.circular(12),
                               ),
                               child: Text(
-                                isTaken ? "Taken" : "Missed",
+                                isTaken
+                                    ? AppText.taken(lang)
+                                    : AppText.missed(lang),
                                 style: TextStyle(
                                   color: isTaken
                                       ? Colors.green

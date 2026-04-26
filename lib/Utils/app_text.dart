@@ -1,4 +1,5 @@
 class AppText {
+
 // profile page jonno
   static String settings(String lang) {
     return lang == 'bn' ? "সেটিংস" : "Settings";
@@ -169,5 +170,41 @@ class AppText {
     }
 
     return meal; // default English
+  }
+  static String medicineDetails(String lang) {
+    return lang == 'bn' ? "ওষুধের বিস্তারিত" : "Medicine Details";
+  }
+
+  static String remove(String lang) {
+    return lang == 'bn' ? "ডিলিট" : "Remove";
+  }
+
+  static String description(String lang) {
+    return lang == 'bn'
+        ? "ওষুধের বিস্তারিত তথ্য"
+        : "Medicine description";
+  }
+
+  static String timeLabel(String lang) {
+    return lang == 'bn' ? "সময়" : "Time";
+  }
+
+  static String statusLabel(String lang) {
+    return lang == 'bn' ? "অবস্থা" : "Status";
+  }
+
+  static String takenStatus(String lang) {
+    return lang == 'bn' ? "নেওয়া হয়েছে" : "Taken";
+  }
+
+  static String notTakenStatus(String lang) {
+    return lang == 'bn' ? "নেওয়া হয়নি" : "Not Taken";
+  }
+
+  static String editSchedule(String lang) {
+    return lang == 'bn' ? "সময় পরিবর্তন" : "Edit Schedule";
+  }
+  static String history(String lang){
+    return lang== 'bn'?    "ইতিহাস" : "history" ;
   }
   }
