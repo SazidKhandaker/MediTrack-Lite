@@ -98,7 +98,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
           centerTitle: true,
         ),
 
-        body:isLoading? Center(child: CircularProgressIndicator())  :SingleChildScrollView(
+        body:isLoading? Center(child: buildWaterProgress())  :SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16),
 
@@ -225,7 +225,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
 
           const SizedBox(height: 15),
 
-          Image.asset(state.image, height: 120),
+          Image.asset(state.image, height: 140),
           CircularPercentIndicator(
             radius: 60,
             lineWidth: 12,
@@ -313,14 +313,21 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
                   ),
                 ),
 
-                onPressed: () async {
-                  setState(() {
-                    goal = value;
-                    current = 0;
-                  });
+                  onPressed: () async {
+                    setState(() {
+                      goal = value;
 
-                  await saveWaterData(); // 🔥 add this
-                },
+                      // ❌ current reset করবো না
+                      // current = 0;
+
+                      // 🔥 যদি current goal এর চেয়ে বেশি হয়, clamp করবো
+                      if (current > goal!) {
+                        current = goal!;
+                      }
+                    });
+
+                    await saveWaterData();
+                  },
                 child: Text("${value} L"),
               );
             }).toList(),
@@ -443,5 +450,66 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
         ],
       );
     }
+  }
+  Widget buildWaterProgress() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [
+            getStatusColor().withOpacity(0.15),
+            Colors.white,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: getStatusColor().withOpacity(0.3),
+            blurRadius: 20,
+            spreadRadius: 2,
+          )
+        ],
+      ),
+
+      child: CircularPercentIndicator(
+        radius: 90,
+        lineWidth: 14,
+        percent: progress,
+        animation: true,
+        animationDuration: 800,
+        circularStrokeCap: CircularStrokeCap.round,
+
+        // 🔥 PROGRESS COLOR
+        progressColor: getStatusColor(),
+
+        // 🔥 BACKGROUND
+        backgroundColor: Colors.grey.shade200,
+
+        // 🔥 CENTER DESIGN
+        center: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+
+            Text(
+              "${current.toStringAsFixed(1)} L",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: getStatusColor(),
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text(
+              "${(progress * 100).toInt()}%",
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
