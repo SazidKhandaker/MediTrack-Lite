@@ -4,6 +4,7 @@ import 'package:meditrack/Utils/app_text.dart';
 import 'package:meditrack/bottomnavigation/Myactivities/stopwatch_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:meditrack/widget/ai_suggestion_card.dart' show AISuggestionCard;
 import 'package:percent_indicator/circular_percent_indicator.dart';
 class MyActivitiesPage extends StatefulWidget {
   const MyActivitiesPage({super.key});
@@ -13,7 +14,7 @@ class MyActivitiesPage extends StatefulWidget {
 }
 
 class _MyActivitiesPageState extends State<MyActivitiesPage> {
-
+  double? userWeight;
   double? goal; // 🔥 nullable (user set করবে)
   double current = 0;
 
@@ -53,6 +54,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
   void initState() {
     super.initState();
     loadWaterData();
+    loadUserWeight();
   }
   Future<void> loadWaterData() async {
     setState(() => isLoading = true);
@@ -85,6 +87,35 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
       "goal": goal,
       "current": current,
     }, SetOptions(merge: true));
+
+  }
+  Future<void> loadUserWeight() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('profile')
+        .doc('data')
+        .get();
+
+    if (doc.exists) {
+      setState(() {
+        userWeight = (doc['weight'] as num?)?.toDouble();
+      });
+    }
+  }
+  Future<void> saveWeight(double weight) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('profile')
+        .doc('data')
+        .set({
+      "weight": weight,
+    }, SetOptions(merge: true));
   }
   Widget build(BuildContext context) {
 
@@ -109,7 +140,26 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
                 _buildHeader(state),
 
                 const SizedBox(height: 15),
-
+                if (userWeight == null)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: showWeightInputDialog,
+                    child: Text(lang == "bn" ? "ওজন সেট করুন" : "Set Your Weight"),
+                  )
+                else
+                  AISuggestionCard(
+                    lang: lang,
+                    suggestion: getSuggestedWater(),
+                    onApply: () {
+                      showWeightInputDialog();
+                    },
+                  ),
+                const SizedBox(height: 20),
                 // 🔥 GOAL SECTION
                 goal == null
                     ? _buildSelectGoalUI(lang)
@@ -226,6 +276,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
           const SizedBox(height: 15),
 
           Image.asset(state.image, height: 140),
+          const SizedBox(height: 10),
           CircularPercentIndicator(
             radius: 60,
             lineWidth: 12,
@@ -512,4 +563,103 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
       ),
     );
   }
-}
+  double getSuggestedWater() {
+    if (userWeight == null) return 2.5; // fallback
+    return userWeight! * 0.033;
+  }
+
+  void showWeightInputDialog() {
+    TextEditingController controller =
+    TextEditingController(text: userWeight?.toString() ?? "");
+
+    final lang = Localizations.localeOf(context).languageCode;
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              Text(
+                lang == "bn" ? "আপনার ওজন দিন" : "Enter Your Weight",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: lang == "bn" ? "যেমন: ৬০ কেজি" : "e.g. 60 kg",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        lang == "bn" ? "বাতিল" : "Cancel",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () async {
+                        double weight =
+                            double.tryParse(controller.text) ?? 0;
+
+                        await saveWeight(weight);
+
+                        setState(() {
+                          userWeight = weight;
+                          goal = getSuggestedWater();
+                        });
+
+                        await saveWaterData();
+
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        lang == "bn" ? "সংরক্ষণ" : "Save",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  }
