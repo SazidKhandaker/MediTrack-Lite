@@ -4,6 +4,7 @@ import 'package:meditrack/Utils/app_text.dart';
 import 'package:meditrack/bottomnavigation/Myactivities/stopwatch_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 class MyActivitiesPage extends StatefulWidget {
   const MyActivitiesPage({super.key});
 
@@ -47,12 +48,15 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
     final now = DateTime.now();
     return "${now.year}-${now.month}-${now.day}";
   }
+  bool isLoading = true;
   @override
   void initState() {
     super.initState();
     loadWaterData();
   }
   Future<void> loadWaterData() async {
+    setState(() => isLoading = true);
+
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
     final doc = await FirebaseFirestore.instance
@@ -63,11 +67,11 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
         .get();
 
     if (doc.exists) {
-      setState(() {
-        goal = (doc['goal'] as num?)?.toDouble();
-        current = (doc['current'] as num?)?.toDouble() ?? 0;
-      });
+      goal = (doc['goal'] as num?)?.toDouble();
+      current = (doc['current'] as num?)?.toDouble() ?? 0;
     }
+
+    setState(() => isLoading = false);
   }
   Future<void> saveWaterData() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -94,7 +98,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
           centerTitle: true,
         ),
 
-        body: SingleChildScrollView(
+        body:isLoading? Center(child: CircularProgressIndicator())  :SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16),
 
@@ -221,9 +225,23 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
 
           const SizedBox(height: 15),
 
-          Image.asset(state.image, height: 140),
+          Image.asset(state.image, height: 120),
+          CircularPercentIndicator(
+            radius: 60,
+            lineWidth: 12,
+            percent: progress,
+            center: Text(
+              "${(progress * 100).toInt()}%",
+              style: const TextStyle(fontSize: 20),
+            ),
+            progressColor: getStatusColor(),
+            backgroundColor: Colors.grey.shade200,
+            circularStrokeCap: CircularStrokeCap.round,
+            animation: true,
+            animationDuration: 800,
+          ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
 
           Text(
             state.title,
