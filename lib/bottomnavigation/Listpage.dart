@@ -44,18 +44,19 @@ class _ListPageState extends State<ListPage> {
     final lang = Localizations.localeOf(context).languageCode;
 
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       // 🔥 APP BAR
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration:  BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Color(0xFF2E8B57),
-                Color(0xFF4CAF50),
-              ],
+              colors: Theme.of(context).brightness == Brightness.dark
+                  ? [Colors.black87, Colors.black]
+                  : [Color(0xFF2E8B57), Color(0xFF4CAF50)],
+
             ),
           ),
         ),
@@ -76,12 +77,12 @@ class _ListPageState extends State<ListPage> {
       ),
 
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFFE8F5E9),
-              Color(0xFFF1F8E9),
-            ],
+            colors: Theme.of(context).brightness == Brightness.dark
+                ?  [Colors.black, Colors.grey.shade900]
+                :  [Color(0xFFE8F5E9), Color(0xFFF1F8E9)],
+
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -112,7 +113,7 @@ class _ListPageState extends State<ListPage> {
                   width: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white,
+                     color: Theme.of(context).cardColor,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black12,
@@ -236,8 +237,8 @@ class _ListPageState extends State<ListPage> {
                                     lang == "bn"
                                         ? DateHelper.formatBanglaDate(map['date'] ?? "")
                                         : map['date'] ?? "",
-                                    style: const TextStyle(
-                                        color: Colors.grey),
+                                    style:  TextStyle(
+                                      color: Theme.of(context).textTheme.bodyMedium!.color),
                                   ),
                                 ],
                               ),
