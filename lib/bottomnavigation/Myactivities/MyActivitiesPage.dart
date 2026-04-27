@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meditrack/Model/watermodel.dart' show WaterState;
 import 'package:meditrack/Utils/app_text.dart';
 import 'package:meditrack/bottomnavigation/Myactivities/stopwatch_page.dart' show StopwatchPage;
 
@@ -52,7 +53,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
   Widget build(BuildContext context) {
 
     final lang = Localizations.localeOf(context).languageCode;
-
+    final state = getWaterState(lang);
     return SafeArea(child: Scaffold(
       appBar: AppBar(
         title: Text(AppText.activities(lang)),
@@ -66,111 +67,108 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
           child: Column(
             children: [
               // 🔥 HEADER IMAGE SECTION
+
+
+          Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            gradient: LinearGradient(
+              colors: [
+                state.color.withOpacity(0.1),
+                Colors.white,
+              ],
+            ),
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+          ),
+
+          child: Column(
+            children: [
+
+              // 🔥 LABEL
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(30),
                   gradient: LinearGradient(
-                    colors: [
-                      Colors.red.shade50,
-                      Colors.white,
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                    colors: [state.color, state.color.withOpacity(0.7)],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                    )
-                  ],
                 ),
-
-                child: Column(
-                  children: [
-
-                    // 🔴 TOP TAG
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        gradient: const LinearGradient(
-                          colors: [Colors.red, Colors.redAccent],
-                        ),
-                      ),
-                      child: const Text(
-                        "UNHEALTHY",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    // 💧 IMAGE WITH BACKGROUND
-                    Container(
-                      height: 160,
-                      width: 160,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.red.withOpacity(0.1),
-                      ),
-                      child: Center(
-                        child: Image.asset(
-                          "assets/images/unhealthy.png",
-                          height: 120,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    // 🔥 TITLE
-                    const Text(
-                      "Drink More Water!",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    const Text(
-                      "Your body needs more water.\nStay hydrated and feel better.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    // 📦 INFO BOX
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-
-                          _infoRow(Icons.battery_alert, "Low Energy", Colors.red),
-                          const Divider(),
-                          _infoRow(Icons.psychology, "Headache", Colors.red),
-                          const Divider(),
-                          _infoRow(Icons.spa, "Dry Skin", Colors.red),
-
-                        ],
-                      ),
-                    )
-                  ],
+                child: Text(
+                  state.label,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
+
+              const SizedBox(height: 15),
+
+              // 💧 IMAGE
+              Container(
+                height: 160,
+                width: 160,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: state.color.withOpacity(0.1),
+                ),
+                child: Center(
+                  child: Image.asset(state.image, height: 120),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              // 🔥 TITLE
+              Text(
+                state.title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: state.color,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                state.subtitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.grey),
+              ),
+
+              const SizedBox(height: 15),
+
+              // 📦 TIPS
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: state.color.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: List.generate(state.tips.length, (i) {
+                    final tip = state.tips[i];
+                    return Column(
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: state.color.withOpacity(0.2),
+                              child: Icon(tip["icon"], color: state.color),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(tip["text"]),
+                          ],
+                        ),
+                        if (i != state.tips.length - 1) const Divider(),
+                      ],
+                    );
+                  }),
+                ),
+              ),
+            ],
+          ),
+        ),
               SizedBox(height: 15),
               // 🔥 DAILY GOAL CARD
               Container(
@@ -308,5 +306,53 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
         Text(text),
       ],
     );
+  }
+  WaterState getWaterState(String lang) {
+    if (progress < 0.4) {
+      return WaterState(
+        label: lang == "bn" ? "অপর্যাপ্ত" : "UNHEALTHY",
+        image: "assets/images/unhealthy.png",
+        color: Colors.red,
+        title: lang == "bn" ? "আরও পানি পান করুন" : "Drink More Water!",
+        subtitle: lang == "bn"
+            ? "আপনার শরীরে পানি কম আছে"
+            : "Your body needs more water.",
+        tips: [
+          {"icon": Icons.battery_alert, "text": lang == "bn" ? "কম শক্তি" : "Low Energy"},
+          {"icon": Icons.psychology, "text": lang == "bn" ? "মাথা ব্যথা" : "Headache"},
+          {"icon": Icons.spa, "text": lang == "bn" ? "শুষ্ক ত্বক" : "Dry Skin"},
+        ],
+      );
+    } else if (progress < 0.7) {
+      return WaterState(
+        label: lang == "bn" ? "স্বাভাবিক" : "NORMAL",
+        image: "assets/images/normal.png",
+        color: Colors.orange,
+        title: lang == "bn" ? "চালিয়ে যান" : "Good Job!",
+        subtitle: lang == "bn"
+            ? "আপনি ঠিক পথে আছেন"
+            : "You are on the right track.",
+        tips: [
+          {"icon": Icons.verified, "text": lang == "bn" ? "ভালো ভারসাম্য" : "Good Balance"},
+          {"icon": Icons.directions_run, "text": lang == "bn" ? "ভালো ফোকাস" : "Better Focus"},
+          {"icon": Icons.emoji_emotions, "text": lang == "bn" ? "ভালো লাগছে" : "Feeling Good"},
+        ],
+      );
+    } else {
+      return WaterState(
+        label: lang == "bn" ? "ভালো" : "HEALTHY",
+        image: "assets/images/healthy.png",
+        color: Colors.green,
+        title: lang == "bn" ? "দারুণ!" : "Great!",
+        subtitle: lang == "bn"
+            ? "আপনি সম্পূর্ণ হাইড্রেটেড"
+            : "You are well hydrated.",
+        tips: [
+          {"icon": Icons.water_drop, "text": lang == "bn" ? "উচ্চ শক্তি" : "High Energy"},
+          {"icon": Icons.shield, "text": lang == "bn" ? "শক্তিশালী রোগ প্রতিরোধ" : "Strong Immunity"},
+          {"icon": Icons.favorite, "text": lang == "bn" ? "সুস্থ শরীর" : "Healthy Body"},
+        ],
+      );
+    }
   }
 }
