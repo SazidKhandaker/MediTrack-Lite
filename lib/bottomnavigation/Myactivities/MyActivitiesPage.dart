@@ -112,7 +112,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
                   color: state.color.withOpacity(0.1),
                 ),
                 child: Center(
-                  child: Image.asset(state.image, height: 120),
+                  child: Image.asset(state.image, height: 200,fit: BoxFit.cover,),
                 ),
               ),
 
