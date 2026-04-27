@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:meditrack/Model/watermodel.dart';
 import 'package:meditrack/Utils/app_text.dart';
 import 'package:meditrack/bottomnavigation/Myactivities/stopwatch_page.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 class MyActivitiesPage extends StatefulWidget {
   const MyActivitiesPage({super.key});
 
@@ -34,8 +35,45 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
     if (progress < 0.7) return Colors.orange;
     return Colors.green;
   }
-
+  String getTodayKey() {
+    final now = DateTime.now();
+    return "${now.year}-${now.month}-${now.day}";
+  }
   @override
+  void initState() {
+    super.initState();
+    loadWaterData();
+  }
+  Future<void> loadWaterData() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('water')
+        .doc(getTodayKey())
+        .get();
+
+    if (doc.exists) {
+      setState(() {
+        goal = (doc['goal'] as num?)?.toDouble();
+        current = (doc['current'] as num?)?.toDouble() ?? 0;
+      });
+    }
+  }
+  Future<void> saveWaterData() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('water')
+        .doc(getTodayKey())
+        .set({
+      "goal": goal,
+      "current": current,
+    }, SetOptions(merge: true));
+  }
   Widget build(BuildContext context) {
 
     final lang = Localizations.localeOf(context).languageCode;
@@ -249,11 +287,13 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
                   ),
                 ),
 
-                onPressed: () {
+                onPressed: () async {
                   setState(() {
                     goal = value;
                     current = 0;
                   });
+
+                  await saveWaterData(); // 🔥 add this
                 },
                 child: Text("${value} L"),
               );
