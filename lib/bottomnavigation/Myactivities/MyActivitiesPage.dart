@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:meditrack/Model/watermodel.dart' show WaterState;
+import 'package:meditrack/Model/watermodel.dart';
 import 'package:meditrack/Utils/app_text.dart';
-import 'package:meditrack/bottomnavigation/Myactivities/stopwatch_page.dart' show StopwatchPage;
-
+import 'package:meditrack/bottomnavigation/Myactivities/stopwatch_page.dart';
 
 class MyActivitiesPage extends StatefulWidget {
   const MyActivitiesPage({super.key});
@@ -13,14 +12,16 @@ class MyActivitiesPage extends StatefulWidget {
 
 class _MyActivitiesPageState extends State<MyActivitiesPage> {
 
-  double goal = 2.5; // liter
+  double? goal; // 🔥 nullable (user set করবে)
   double current = 0;
 
   int selectedIndex = 0;
-
   final List<int> amounts = [250, 500, 750, 1000];
 
-  double get progress => (current / goal).clamp(0, 1);
+  double get progress {
+    if (goal == null || goal == 0) return 0;
+    return (current / goal!).clamp(0, 1);
+  }
 
   void addWater(int ml) {
     setState(() {
@@ -28,25 +29,10 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
     });
   }
 
-  String getStatus(String lang) {
-    if (progress < 0.4) return AppText.unhealthy(lang);
-    if (progress < 0.7) return AppText.normal(lang);
-    return AppText.healthy(lang);
-  }
-
   Color getStatusColor() {
     if (progress < 0.4) return Colors.red;
     if (progress < 0.7) return Colors.orange;
     return Colors.green;
-  }
-  String getHeaderImage() {
-    if (progress < 0.4) {
-      return "assets/images/unhealthy.png";
-    } else if (progress < 0.7) {
-      return "assets/images/normal.png";
-    } else {
-      return "assets/images/healthy.png";
-    }
   }
 
   @override
@@ -54,259 +40,275 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
 
     final lang = Localizations.localeOf(context).languageCode;
     final state = getWaterState(lang);
-    return SafeArea(child: Scaffold(
-      appBar: AppBar(
-        title: Text(AppText.activities(lang)),
-        centerTitle: true,
-      ),
 
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(lang == "bn" ? "আমার কার্যক্রম" : "My Activities"),
+          centerTitle: true,
+        ),
 
-          child: Column(
-            children: [
-              // 🔥 HEADER IMAGE SECTION
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
 
+            child: Column(
+              children: [
 
-          Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(25),
-            gradient: LinearGradient(
-              colors: [
-                state.color.withOpacity(0.1),
-                Colors.white,
-              ],
-            ),
-            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
-          ),
+                // 🔥 HEADER
+                _buildHeader(state),
 
-          child: Column(
-            children: [
+                const SizedBox(height: 15),
 
-              // 🔥 LABEL
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  gradient: LinearGradient(
-                    colors: [state.color, state.color.withOpacity(0.7)],
+                // 🔥 GOAL SECTION
+                goal == null
+                    ? _buildSelectGoalUI(lang)
+                    : _buildGoalProgressUI(lang),
+
+                const SizedBox(height: 15),
+
+                // 🔥 SIP TEXT
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    lang == "bn" ? "পানির পরিমাণ নির্বাচন করুন" : "Choose Your Sip",
                   ),
                 ),
-                child: Text(
-                  state.label,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
 
-              const SizedBox(height: 15),
+                const SizedBox(height: 10),
 
-              // 💧 IMAGE
-              Container(
-                height: 160,
-                width: 160,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: state.color.withOpacity(0.1),
-                ),
-                child: Center(
-                  child: Image.asset(state.image, height: 200,fit: BoxFit.cover,),
-                ),
-              ),
+                // 🔥 SIP BUTTONS
+                Row(
+                  children: List.generate(amounts.length, (index) {
+                    bool isSelected = selectedIndex == index;
 
-              const SizedBox(height: 15),
-
-              // 🔥 TITLE
-              Text(
-                state.title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: state.color,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              Text(
-                state.subtitle,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
-              ),
-
-              const SizedBox(height: 15),
-
-              // 📦 TIPS
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: state.color.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: List.generate(state.tips.length, (i) {
-                    final tip = state.tips[i];
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: state.color.withOpacity(0.2),
-                              child: Icon(tip["icon"], color: state.color),
+                    return Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedIndex = index;
+                          });
+                          addWater(amounts[index]);
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.green.shade100
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.green
+                                  : Colors.grey.shade300,
                             ),
-                            const SizedBox(width: 10),
-                            Text(tip["text"]),
-                          ],
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(Icons.local_drink),
+                              const SizedBox(height: 6),
+                              Text("${amounts[index]} ml"),
+                            ],
+                          ),
                         ),
-                        if (i != state.tips.length - 1) const Divider(),
-                      ],
+                      ),
                     );
                   }),
                 ),
-              ),
-            ],
-          ),
-        ),
-              SizedBox(height: 15),
-              // 🔥 DAILY GOAL CARD
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(AppText.dailyGoal(lang),
-                            style: const TextStyle(fontWeight: FontWeight.bold)),
-                        TextButton(
-                          onPressed: () {},
-                          child: Text(AppText.change(lang)),
-                        )
-                      ],
-                    ),
+                const SizedBox(height: 20),
 
-                    Text("${goal.toStringAsFixed(1)} ${AppText.liter(lang)}"),
-
-                    const SizedBox(height: 10),
-
-                    LinearProgressIndicator(
-                      value: progress,
-                      color: getStatusColor(),
-                      backgroundColor: Colors.grey.shade300,
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    Text("${current.toStringAsFixed(1)} ${AppText.liter(lang)}"),
-
-                    const SizedBox(height: 8),
-
-                    Text(
-                      getStatus(lang),
-                      style: TextStyle(
-                        color: getStatusColor(),
-                        fontWeight: FontWeight.bold,
+                // 🔥 WALK BUTTON
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const StopwatchPage(),
                       ),
-                    )
-                  ],
+                    );
+                  },
+                  icon: const Icon(Icons.directions_walk),
+                  label: Text(lang == "bn" ? "হাঁটা শুরু করুন" : "Start Walking"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 15),
-
-              // 🔥 SIP SELECTOR
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(AppText.chooseSip(lang)),
-              ),
-
-              const SizedBox(height: 10),
-
-              Row(
-                children: List.generate(amounts.length, (index) {
-                  bool isSelected = selectedIndex == index;
-
-                  return Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedIndex = index;
-                        });
-                        addWater(amounts[index]);
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.all(6),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Colors.green.shade100
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isSelected
-                                ? Colors.green
-                                : Colors.grey.shade300,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            const Icon(Icons.local_drink),
-                            const SizedBox(height: 6),
-                            Text("${amounts[index]} ml"),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-
-              const SizedBox(height: 20),
-
-              // 🔥 WALKING BUTTON
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const StopwatchPage(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.directions_walk),
-                label: Text(AppText.startWalking(lang)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-              ),
-
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ));
-  }
-  Widget _infoRow(IconData icon, String text, Color color) {
-    return Row(
-      children: [
-        CircleAvatar(
-          backgroundColor: color.withOpacity(0.2),
-          child: Icon(icon, color: color),
-        ),
-        const SizedBox(width: 10),
-        Text(text),
-      ],
     );
   }
+
+  // 🔥 HEADER UI
+  Widget _buildHeader(WaterState state) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        gradient: LinearGradient(
+          colors: [
+            state.color.withOpacity(0.1),
+            Colors.white,
+          ],
+        ),
+      ),
+      child: Column(
+        children: [
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              color: state.color,
+            ),
+            child: Text(
+              state.label,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          Image.asset(state.image, height: 140),
+
+          const SizedBox(height: 10),
+
+          Text(
+            state.title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: state.color,
+            ),
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(state.subtitle),
+
+          const SizedBox(height: 10),
+
+          Column(
+            children: state.tips.map<Widget>((tip) {
+              return ListTile(
+                leading: Icon(tip["icon"], color: state.color),
+                title: Text(tip["text"]),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔥 SELECT GOAL UI
+  Widget _buildSelectGoalUI(String lang) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.water_drop),
+              const SizedBox(width: 8),
+              Text(
+                lang == "bn"
+                    ? "আজকের লক্ষ্য নির্ধারণ করুন"
+                    : "Select Your Today’s Target",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 15),
+
+          Wrap(
+            spacing: 10,
+            children: [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0].map((value) {
+              return ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:  goal == value
+                      ? Colors.blue
+                      : Colors.blue.shade50,
+                  foregroundColor: goal == value
+                      ? Colors.white
+                      : Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+
+                onPressed: () {
+                  setState(() {
+                    goal = value;
+                    current = 0;
+                  });
+                },
+                child: Text("${value} L"),
+              );
+            }).toList(),
+          )
+        ],
+      ),
+    );
+  }
+
+  // 🔥 GOAL UI
+  Widget _buildGoalProgressUI(String lang) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(lang == "bn" ? "দৈনিক লক্ষ্য" : "Daily Goal"),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    goal = null;
+                  });
+                },
+                child: Text(lang == "bn" ? "পরিবর্তন" : "Change"),
+              )
+            ],
+          ),
+
+          Text("${goal!.toStringAsFixed(1)} L"),
+
+          const SizedBox(height: 10),
+
+          LinearProgressIndicator(
+            value: progress,
+            color: getStatusColor(),
+          ),
+
+          const SizedBox(height: 6),
+
+          Text("${current.toStringAsFixed(1)} L"),
+        ],
+      ),
+    );
+  }
+
+  // 🔥 STATE LOGIC
   WaterState getWaterState(String lang) {
     if (progress < 0.4) {
       return WaterState(
