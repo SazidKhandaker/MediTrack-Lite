@@ -24,10 +24,18 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
     return (current / goal!).clamp(0, 1);
   }
 
-  void addWater(int ml) {
+  void addWater(int ml) async {
+    if (goal == null) return;
+
     setState(() {
       current += ml / 1000;
+
+      if (current > goal!) {
+        current = goal!;
+      }
     });
+
+    await saveWaterData(); // 🔥 important
   }
 
   Color getStatusColor() {
@@ -321,11 +329,32 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
             children: [
               Text(lang == "bn" ? "দৈনিক লক্ষ্য" : "Daily Goal"),
               TextButton(
-                onPressed: () {
-                  setState(() {
-                    goal = null;
-                  });
-                },
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: Text(lang == "bn" ? "লক্ষ্য পরিবর্তন?" : "Change Goal?"),
+                        content: Text(lang == "bn"
+                            ? "আপনি কি নতুন লক্ষ্য নির্ধারণ করতে চান?"
+                            : "Do you want to set a new goal?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(lang == "bn" ? "না" : "Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                goal = null;
+                              });
+                              Navigator.pop(context);
+                            },
+                            child: Text(lang == "bn" ? "হ্যাঁ" : "Yes"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 child: Text(lang == "bn" ? "পরিবর্তন" : "Change"),
               )
             ],
