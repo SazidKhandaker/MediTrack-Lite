@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meditrack/Utils/app_text.dart' show AppText;
 
 import 'package:meditrack/bottomnavigation/profile/profilepage.dart';
-import 'package:meditrack/bottomnavigation/calendar_page.dart';
+import 'package:meditrack/bottomnavigation/Myactivities/MyActivitiesPage.dart';
 import 'package:meditrack/singlepagedetailse.dart' show MedicineDetailPage;
 import 'bottomnavigation/AddPage.dart';
 import 'bottomnavigation/Listpage.dart';
@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
         page = const HomePage();
         break;
       case 1:
-        page = const CalendarPage();
+        page = const MyActivitiesPage ();
         break;
       case 2:
         page = const AddPage();

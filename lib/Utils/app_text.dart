@@ -211,4 +211,36 @@ class AppText {
   static String cancel(String lang) {
     return lang == 'bn' ? "বাতিল" : "Cancel";
   }
+  static String activities(String lang) =>
+      lang == 'bn' ? "আমার কার্যকলাপ" : "My Activities";
+
+  static String dailyGoal(String lang) =>
+      lang == 'bn' ? "দৈনিক লক্ষ্য" : "Daily Goal";
+
+  static String change(String lang) =>
+      lang == 'bn' ? "পরিবর্তন" : "Change";
+
+  static String reminders(String lang) =>
+      lang == 'bn' ? "রিমাইন্ডার" : "Reminders";
+
+  static String add(String lang) =>
+      lang == 'bn' ? "যোগ করুন" : "Add";
+
+  static String chooseSip(String lang) =>
+      lang == 'bn' ? "পানির পরিমাণ বেছে নিন" : "Choose Your Sip";
+
+  static String unhealthy(String lang) =>
+      lang == 'bn' ? "অপর্যাপ্ত" : "Unhealthy";
+
+  static String normal(String lang) =>
+      lang == 'bn' ? "স্বাভাবিক" : "Normal";
+
+  static String healthy(String lang) =>
+      lang == 'bn' ? "ভালো" : "Healthy";
+
+  static String startWalking(String lang) =>
+      lang == 'bn' ? "হাঁটা শুরু করুন" : "Start Walking";
+
+  static String liter(String lang) =>
+      lang == 'bn' ? "লিটার" : "L";
   }
