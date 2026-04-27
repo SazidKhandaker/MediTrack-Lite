@@ -101,7 +101,7 @@ class _HomePageState extends State<HomePage> {
         
               GestureDetector(
                 onTap: () => navigateTo(1),
-                child: const Icon(Icons.calendar_today, color: Colors.grey),
+                child: const Icon(Icons.local_activity, color: Colors.grey),
               ),
         
               GestureDetector(
