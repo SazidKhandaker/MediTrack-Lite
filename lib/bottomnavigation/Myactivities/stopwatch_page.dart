@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 
 class SmartActivityPage extends StatefulWidget {
   const SmartActivityPage({super.key});
@@ -36,8 +37,16 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
   @override
   void initState() {
     super.initState();
+    markers = {
+      Marker(
+        markerId: const MarkerId("me"),
+        position: currentLatLng,
+      )
+    };
     initPermission();
     initSteps();
+    startLiveTracking();
+
   }
 
   /// 🔥 PERMISSION
@@ -101,7 +110,36 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
     int s = seconds % 60;
     return "${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
   }
+  LatLng currentLatLng = const LatLng(23.8103, 90.4125);
+  Set<Marker> markers = {};
+  StreamSubscription<Position>? positionStream;
+  Future<void> startLiveTracking() async {
+    await Geolocator.requestPermission();
 
+    positionStream = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5,
+      ),
+    ).listen((Position position) {
+      LatLng newPos = LatLng(position.latitude, position.longitude);
+
+      setState(() {
+        currentLatLng = newPos;
+
+        markers = {
+          Marker(
+            markerId: const MarkerId("me"),
+            position: newPos,
+          )
+        };
+      });
+
+      mapController?.animateCamera(
+        CameraUpdate.newLatLng(newPos),
+      );
+    });
+  }
   @override
   void dispose() {
     timer?.cancel();
@@ -120,10 +158,12 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
 
           /// 🔥 GOOGLE MAP
           GoogleMap(
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(23.8103, 90.4125), // Dhaka
-              zoom: 14,
+            initialCameraPosition: CameraPosition(
+              target: currentLatLng,
+              zoom: 16,
             ),
+            markers: markers,
+            myLocationEnabled: true,
             onMapCreated: (controller) {
               mapController = controller;
             },
