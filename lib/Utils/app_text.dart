@@ -1,5 +1,19 @@
 class AppText {
+  static String yourTarget(String lang) {
+    return lang == 'bn' ? "আপনার লক্ষ্য" : "Your Target";
+  }
 
+  static String stepsUnit(String lang) {
+    return lang == 'bn' ? "স্টেপ" : "steps";
+  }
+
+  static String completed(String lang) {
+    return lang == 'bn' ? "সম্পন্ন" : "completed";
+  }
+
+  static String selectTarget(String lang) {
+    return lang == 'bn' ? "টার্গেট নির্বাচন করুন" : "Select Target";
+  }
 // profile page jonno
   static String settings(String lang) {
     return lang == 'bn' ? "সেটিংস" : "Settings";
@@ -243,4 +257,21 @@ class AppText {
 
   static String liter(String lang) =>
       lang == 'bn' ? "লিটার" : "L";
+  static String distance(String lang) {
+    return lang == 'bn' ? "দূরত্ব" : "Distance";
+  }
+
+  static String steps(String lang) {
+    return lang == 'bn' ? "স্টেপ" : "Steps";
+  }
+
+  static String elapsed(String lang) {
+    return lang == 'bn' ? "সময়" : "Elapsed time";
+  }
+  static String target(String lang) {
+    return lang == 'bn' ? "টার্গেট" : "Target";
+  }
+
+
+
   }

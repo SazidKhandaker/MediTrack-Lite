@@ -7,7 +7,9 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:meditrack/utils/app_text.dart';
+import 'package:meditrack/utils/date_helper.dart';
+import 'package:meditrack/utils/app_text.dart';
 class SmartActivityPage extends StatefulWidget {
   const SmartActivityPage({super.key});
 
@@ -20,6 +22,7 @@ enum ActivityType { running, walking, cycling }
 ActivityType selectedActivity = ActivityType.running;
 
 class _SmartActivityPageState extends State<SmartActivityPage> {
+
   Future<void> saveActivity() async {
     String today = DateTime.now().toString().substring(0, 10);
 
@@ -226,6 +229,37 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
     int s = totalSeconds % 60;
     return "${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
   }
+  bool showCountdown = false;
+  int countdown = 3;
+  String countdownText = "3";
+  Future<void> startCountdown() async {
+    setState(() {
+      showCountdown = true;
+      countdown = 3;
+    });
+
+    for (int i = 3; i > 0; i--) {
+      setState(() {
+        countdown = i;
+        countdownText = "$i";
+      });
+      await Future.delayed(const Duration(seconds: 1));
+    }
+
+    setState(() {
+      countdownText = "GO 🚀";
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    setState(() {
+      showCountdown = false;
+    });
+
+    // 🔥 এখানেই তোমার start() call করো
+    start();
+  }
+
   Future<bool> _onBackPressed() async {
     bool? result = await showDialog(
       context: context,
@@ -339,7 +373,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
 
   @override
   Widget build(BuildContext context) {
-
+    final lang = Localizations.localeOf(context).languageCode;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return WillPopScope(
@@ -350,7 +384,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
       child: Scaffold(
         body: Stack(
           children: [
-      
+
             /// 🔥 GOOGLE MAP
             GoogleMap(
               initialCameraPosition: CameraPosition(
@@ -364,14 +398,16 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                 mapController = controller;
               },
             ),
-      
+
             /// 🔥 UI OVERLAY
+
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-      
+
+
                     /// 🔥 TOP CARD
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -391,7 +427,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-      
+
                           /// 🟢 LEFT SIDE (ICON + DATA)
                           Row(
                             children: [
@@ -407,9 +443,9 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                   color: Colors.orange,
                                 ),
                               ),
-      
+
                               const SizedBox(width: 12),
-      
+
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -432,24 +468,27 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                               )
                             ],
                           ),
-      
+
                           /// 🔵 RIGHT SIDE (DATE + HISTORY)
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-      
+
                               /// 📅 DATE
                               Text(
-                                DateTime.now().toString().substring(0, 10),
+                                lang == "bn"
+                                    ? DateHelper.formatBanglaDate(
+                                    DateTime.now().toString().substring(0, 10))
+                                    : DateTime.now().toString().substring(0, 10),
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: isDark ? Colors.white70 : Colors.black54,
                                 ),
                               ),
-      
+
                               const SizedBox(height: 8),
-      
+
                               /// 📊 HISTORY BUTTON
                               GestureDetector(
                                 onTap: () {
@@ -486,14 +525,39 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                         ],
                       ),
                     ),
-      
+
                     const Spacer(),
-      
+
                     /// 🔥 BOTTOM PANEL
-      
-      
+
+                    if (showCountdown)
+                      Container(
+                        color: Colors.black.withOpacity(0.6),
+                        child: Align(
+                          alignment: Alignment(0, -0.3),
+                          child: Center(
+                            child: AnimatedScale(
+                              scale: countdown == 3 ? 1.2 : countdown == 2 ? 1.4 : 1.6,
+                              duration: const Duration(milliseconds: 300),
+                              child: Text(
+                                countdownText,
+                                style: TextStyle(
+                                  fontSize: 60,
+                                  fontWeight: FontWeight.bold,
+                                  color: countdown == 1
+                                      ? Colors.red
+                                      : countdown == 2
+                                      ? Colors.orange
+                                      : Colors.green,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    SizedBox(height: 10,),
                     Container(
-      
+
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.9),
@@ -507,7 +571,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                       ),
                       child: Column(
                         children: [
-      
+
                           /// 🔥 MODE BUTTONS
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -517,14 +581,14 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                               _modeButton("Cycling", ActivityType.cycling),
                             ],
                           ),
-      
+
                           const SizedBox(height: 10),
-      
+
                           /// 🔥 TIME + DISTANCE
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-      
+
                               Column(
                                 children: [
                                   Text(
@@ -538,10 +602,10 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                       style: TextStyle(color: Colors.white70)),
                                 ],
                               ),
-      
+
                                 Column(children: [
-      
-      
+
+
                                   Icon(
                                     selectedActivity == ActivityType.running
                                         ? Icons.directions_run
@@ -551,23 +615,23 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                     color: Colors.orange,
                                     size: 28,
                                   ),
-      
+
                                   const SizedBox(height: 5),
-      
+
                                   Text(
                                     selectedActivity == ActivityType.running
-                                        ? "Keep running! 🔥"
+                                        ? (lang == "bn" ? "দৌড় চালিয়ে যান 🔥" : "Keep running! 🔥")
                                         : selectedActivity == ActivityType.walking
-                                        ? "Nice walk 👣"
-                                        : "Keep cycling 🚴",
+                                        ? (lang == "bn" ? "ভালো হাঁটছেন 👣" : "Nice walk 👣")
+                                        : (lang == "bn" ? "চালিয়ে যান 🚴" : "Keep cycling 🚴"),
                                     style: const TextStyle(color: Colors.white70),
                                   ),
                                 ],
-      
-      
+
+
                                 ),
-      
-      
+
+
                               Column(
                                 children: [
                                   Text(
@@ -580,13 +644,13 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                               ),
                             ],
                           ),
-      
+
                           const SizedBox(height: 14),
-      
+
                           /// 🔥 STATS
                           Row(
                             children: [
-      
+
                               Expanded(
                                 child: _statCard(
                                   icon: Icons.local_fire_department,
@@ -595,9 +659,9 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                   color: Colors.orange,
                                 ),
                               ),
-      
+
                               const SizedBox(width: 8),
-      
+
                               Expanded(
                                 child: GestureDetector(
                                   onTap: showTargetDialog,
@@ -609,15 +673,15 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                     ),
                                     child: Column(
                                       children: [
-      
+
                                         /// 🔥 TITLE
-                                        const Text(
-                                          "Your Target",
+                                         Text(
+                                           lang == 'bn' ? "আপনার লক্ষ্য" : "Your Target",
                                           style: TextStyle(color: Colors.blue),
                                         ),
-      
+
                                         const SizedBox(height: 6),
-      
+
                                         /// 🔥 TARGET VALUE
                                         Text(
                                           "$targetSteps",
@@ -627,11 +691,11 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                             color: Colors.blue,
                                           ),
                                         ),
-      
+
                                         const Text("steps", style: TextStyle(color: Colors.blue)),
-      
+
                                         const SizedBox(height: 8),
-      
+
                                         /// 🔥 PROGRESS BAR
                                         LinearProgressIndicator(
                                           value: progress,
@@ -640,9 +704,9 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                           backgroundColor: Colors.white12,
                                           valueColor: const AlwaysStoppedAnimation(Colors.blue),
                                         ),
-      
+
                                         const SizedBox(height: 6),
-      
+
                                         /// 🔥 PERCENT
                                         Text(
                                           "${(progress * 100).toStringAsFixed(0)}% completed",
@@ -655,12 +719,12 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                               )
                             ],
                           ),
-      
+
                           const SizedBox(height: 16),
-      
+
                           /// 🔥 CONTROL BUTTON
                           GestureDetector(
-                            onTap: running ? stop : start,
+                            onTap: running ? stop : startCountdown,
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
@@ -682,8 +746,8 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                             ),
                           ),
                           const SizedBox(height: 10),
-      
-      
+
+
                         ],
                       ),
                     )
