@@ -103,6 +103,8 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
       steps = 0;
       initialSteps = 0;
     });
+    route.clear();
+    polylines.clear();
   }
 
   String formatTime() {
@@ -114,12 +116,36 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
   Set<Marker> markers = {};
   StreamSubscription<Position>? positionStream;
   Future<void> startLiveTracking() async {
-    await Geolocator.requestPermission();
+    LocationPermission permission = await Geolocator.requestPermission();
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return;
+    }
+
+    Position position = await Geolocator.getCurrentPosition();
+
+    LatLng startPos = LatLng(position.latitude, position.longitude);
+
+    setState(() {
+      currentLatLng = startPos;
+
+      markers = {
+        Marker(
+          markerId: const MarkerId("me"),
+          position: startPos,
+        )
+      };
+    });
+
+    mapController?.animateCamera(
+      CameraUpdate.newLatLng(startPos),
+    );
 
     positionStream = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 5,
+        distanceFilter: 1,
       ),
     ).listen((Position position) {
       LatLng newPos = LatLng(position.latitude, position.longitude);
@@ -127,19 +153,41 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
       setState(() {
         currentLatLng = newPos;
 
+        // 🔥 route add
+        route.add(newPos);
+
+        // 🔥 marker update
         markers = {
           Marker(
             markerId: const MarkerId("me"),
             position: newPos,
           )
         };
+
+        // 🔥 polyline draw
+        polylines = {
+          Polyline(
+            polylineId: const PolylineId("route"),
+            points: route,
+            color: Colors.blue,
+            width: 5,
+          )
+        };
       });
 
+      // 🔥 smooth camera follow
       mapController?.animateCamera(
-        CameraUpdate.newLatLng(newPos),
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: newPos,
+            zoom: 17,
+          ),
+        ),
       );
     });
   }
+  List<LatLng> route = [];
+  Set<Polyline> polylines = {};
   @override
   void dispose() {
     timer?.cancel();
@@ -163,6 +211,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
               zoom: 16,
             ),
             markers: markers,
+            polylines: polylines, // 🔥 ADD THIS
             myLocationEnabled: true,
             onMapCreated: (controller) {
               mapController = controller;
