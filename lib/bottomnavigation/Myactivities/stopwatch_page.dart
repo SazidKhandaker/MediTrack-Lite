@@ -274,7 +274,8 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
 
 
                   Container(
-                    padding: const EdgeInsets.all(18),
+
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(25),
@@ -298,7 +299,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                           ],
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 10),
 
                         /// 🔥 TIME + DISTANCE
                         Row(
@@ -361,7 +362,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                           ],
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 14),
 
                         /// 🔥 STATS
                         Row(
@@ -376,7 +377,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                               ),
                             ),
 
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
 
                             Expanded(
                               child: GestureDetector(
@@ -410,7 +411,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
 
                                       const Text("steps", style: TextStyle(color: Colors.blue)),
 
-                                      const SizedBox(height: 10),
+                                      const SizedBox(height: 8),
 
                                       /// 🔥 PROGRESS BAR
                                       LinearProgressIndicator(
@@ -436,7 +437,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                           ],
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
                         /// 🔥 CONTROL BUTTON
                         GestureDetector(
