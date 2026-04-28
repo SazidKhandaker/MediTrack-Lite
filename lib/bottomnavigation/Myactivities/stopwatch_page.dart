@@ -74,6 +74,8 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
 
         /// calories
         calories = steps * 0.04;
+        progress = steps / targetSteps;
+        if (progress > 1) progress = 1;
       });
     });
   }
@@ -193,6 +195,9 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
   }
   List<LatLng> route = [];
   Set<Polyline> polylines = {};
+  int targetSteps = 5000; // default
+  double progress = 0;
+
   @override
   void dispose() {
     timer?.cancel();
@@ -267,7 +272,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
 
                   /// 🔥 BOTTOM PANEL
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(25),
@@ -372,13 +377,60 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                             const SizedBox(width: 10),
 
                             Expanded(
-                              child: _statCard(
-                                icon: Icons.favorite,
-                                value: "110",
-                                label: "bpm",
-                                color: Colors.red,
+                              child: GestureDetector(
+                                onTap: showTargetDialog,
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Column(
+                                    children: [
+
+                                      /// 🔥 TITLE
+                                      const Text(
+                                        "Your Target",
+                                        style: TextStyle(color: Colors.blue),
+                                      ),
+
+                                      const SizedBox(height: 6),
+
+                                      /// 🔥 TARGET VALUE
+                                      Text(
+                                        "$targetSteps",
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+
+                                      const Text("steps", style: TextStyle(color: Colors.blue)),
+
+                                      const SizedBox(height: 10),
+
+                                      /// 🔥 PROGRESS BAR
+                                      LinearProgressIndicator(
+                                        value: progress,
+                                        minHeight: 8,
+                                        borderRadius: BorderRadius.circular(10),
+                                        backgroundColor: Colors.white12,
+                                        valueColor: const AlwaysStoppedAnimation(Colors.blue),
+                                      ),
+
+                                      const SizedBox(height: 6),
+
+                                      /// 🔥 PERCENT
+                                      Text(
+                                        "${(progress * 100).toStringAsFixed(0)}% completed",
+                                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
+                            )
                           ],
                         ),
 
@@ -483,6 +535,39 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
           Text(label, style: TextStyle(color: color)),
         ],
       ),
+    );
+  }
+  void showTargetDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Select Your Target"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _targetOption(2000),
+              _targetOption(5000),
+              _targetOption(8000),
+              _targetOption(10000),
+              _targetOption(15000),
+              _targetOption(20000),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _targetOption(int value) {
+    return ListTile(
+      title: Text("$value steps"),
+      onTap: () {
+        setState(() {
+          targetSteps = value;
+        });
+        Navigator.pop(context);
+      },
     );
   }
 }
