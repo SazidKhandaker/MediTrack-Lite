@@ -28,13 +28,12 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
 
     await FirebaseFirestore.instance
         .collection("activity")
-        .doc(today)
-        .set({
+        .add({
       "steps": steps,
       "distance": distance,
       "calories": calories,
-      "time": seconds, // 🔥 RAW TIME (seconds)
-      "formatted_time": formatDuration(seconds), // 🔥 readable
+      "time": seconds,
+      "formatted_time": formatDuration(seconds),
       "date": today,
     });
   }

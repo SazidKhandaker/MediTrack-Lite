@@ -6,12 +6,19 @@ import 'package:meditrack/utils/date_helper.dart';
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
 
+  /// 🔥 TIME FORMAT
+  String formatDuration(int totalSeconds) {
+    int m = totalSeconds ~/ 60;
+    int s = totalSeconds % 60;
+    return "${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final lang = Localizations.localeOf(context).languageCode;
 
-    /// 🎨 Gradient list (mixed colors)
+    /// 🎨 gradient colors
     final List<List<Color>> cardGradients = [
       [Colors.orange.shade300, Colors.deepOrange],
       [Colors.blue.shade300, Colors.blueAccent],
@@ -26,20 +33,18 @@ class HistoryPage extends StatelessWidget {
         centerTitle: true,
       ),
 
-      body: StreamBuilder(
+      body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection("activity")
             .orderBy("date", descending: true)
             .snapshots(),
         builder: (context, snapshot) {
 
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          var docs = snapshot.data!.docs;
-
-          if (docs.isEmpty) {
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Text(
                 lang == "bn" ? "কোনো ডাটা নেই" : "No history yet",
@@ -47,17 +52,42 @@ class HistoryPage extends StatelessWidget {
             );
           }
 
+          final docs = snapshot.data!.docs;
+
+          /// 🔥 GROUP + SUM
+          Map<String, Map<String, dynamic>> groupedData = {};
+
+          for (var doc in docs) {
+            final data = doc.data() as Map<String, dynamic>;
+
+            final String date = data["date"] ?? "unknown";
+
+            if (!groupedData.containsKey(date)) {
+              groupedData[date] = {
+                "steps": 0,
+                "distance": 0.0,
+                "calories": 0.0,
+                "time": 0,
+              };
+            }
+
+            groupedData[date]!["steps"] += (data["steps"] ?? 0) as int;
+            groupedData[date]!["distance"] += (data["distance"] ?? 0).toDouble();
+            groupedData[date]!["calories"] += (data["calories"] ?? 0).toDouble();
+            groupedData[date]!["time"] += (data["time"] ?? 0) as int;
+          }
+
+          final groupedList = groupedData.entries.toList();
+
           return ListView.builder(
             padding: const EdgeInsets.all(12),
-            itemCount: docs.length,
+            itemCount: groupedList.length,
             itemBuilder: (context, index) {
 
-              var data = docs[index];
+              final entry = groupedList[index];
+              final date = entry.key;
+              final data = entry.value;
 
-              double distance = data["distance"] ?? 0;
-              double calories = data["calories"] ?? 0;
-
-              /// 🔥 dynamic gradient
               final gradient =
               cardGradients[index % cardGradients.length];
 
@@ -92,8 +122,8 @@ class HistoryPage extends StatelessWidget {
                       children: [
                         Text(
                           lang == "bn"
-                              ? DateHelper.formatBanglaDate(data["date"])
-                              : data["date"],
+                              ? DateHelper.formatBanglaDate(date)
+                              : date,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -107,7 +137,7 @@ class HistoryPage extends StatelessWidget {
 
                     const SizedBox(height: 14),
 
-                    /// 📊 DATA ROW
+                    /// 📊 DATA
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -120,19 +150,21 @@ class HistoryPage extends StatelessWidget {
 
                         _item(
                           icon: Icons.map,
-                          value: "${distance.toStringAsFixed(2)}",
+                          value:
+                          "${(data["distance"] ?? 0).toDouble().toStringAsFixed(2)}",
                           label: "km",
                         ),
 
                         _item(
                           icon: Icons.local_fire_department,
-                          value: "${calories.toStringAsFixed(0)}",
+                          value:
+                          "${(data["calories"] ?? 0).toDouble().toStringAsFixed(0)}",
                           label: "kcal",
                         ),
 
                         _item(
                           icon: Icons.timer,
-                          value: data["formatted_time"] ?? "00:00",
+                          value: formatDuration(data["time"] ?? 0),
                           label: lang == "bn" ? "সময়" : "time",
                         ),
                       ],
@@ -147,7 +179,7 @@ class HistoryPage extends StatelessWidget {
     );
   }
 
-  /// 🔥 ITEM DESIGN
+  /// 🔥 ITEM UI
   Widget _item({
     required IconData icon,
     required String value,
