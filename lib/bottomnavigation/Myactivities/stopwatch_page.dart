@@ -9,11 +9,16 @@ import 'package:geolocator/geolocator.dart';
 class SmartActivityPage extends StatefulWidget {
   const SmartActivityPage({super.key});
 
+
   @override
   State<SmartActivityPage> createState() => _SmartActivityPageState();
 }
+enum ActivityType { running, walking, cycling }
+
+ActivityType selectedActivity = ActivityType.running;
 
 class _SmartActivityPageState extends State<SmartActivityPage> {
+
 
   /// 🔥 MAP
   GoogleMapController? mapController;
@@ -280,9 +285,9 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            _modeButton("Running", true),
-                            _modeButton("Walking", false),
-                            _modeButton("Cycling", false),
+                            _modeButton("Running", ActivityType.running),
+                            _modeButton("Walking", ActivityType.walking),
+                            _modeButton("Cycling", ActivityType.cycling),
                           ],
                         ),
 
@@ -306,6 +311,35 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                     style: TextStyle(color: Colors.white70)),
                               ],
                             ),
+
+                              Column(children: [
+
+
+                                Icon(
+                                  selectedActivity == ActivityType.running
+                                      ? Icons.directions_run
+                                      : selectedActivity == ActivityType.walking
+                                      ? Icons.directions_walk
+                                      : Icons.directions_bike,
+                                  color: Colors.orange,
+                                  size: 28,
+                                ),
+
+                                const SizedBox(height: 5),
+
+                                Text(
+                                  selectedActivity == ActivityType.running
+                                      ? "Keep running! 🔥"
+                                      : selectedActivity == ActivityType.walking
+                                      ? "Nice walk 👣"
+                                      : "Keep cycling 🚴",
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ],
+
+
+                              ),
+
 
                             Column(
                               children: [
@@ -373,6 +407,9 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 10),
+
+
                       ],
                     ),
                   )
@@ -384,17 +421,40 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
       ),
     );
   }
-  Widget _modeButton(String text, bool active) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: active ? Colors.orange : Colors.grey.shade800,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: active ? Colors.white : Colors.white70,
+  Widget _modeButton(String text, ActivityType type) {
+    final isActive = selectedActivity == type;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedActivity = type;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.orange : Colors.grey.shade800,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              type == ActivityType.running
+                  ? Icons.directions_run
+                  : type == ActivityType.walking
+                  ? Icons.directions_walk
+                  : Icons.directions_bike,
+              color: Colors.white,
+              size: 16,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              text,
+              style: TextStyle(
+                color: isActive ? Colors.white : Colors.white70,
+              ),
+            ),
+          ],
         ),
       ),
     );
