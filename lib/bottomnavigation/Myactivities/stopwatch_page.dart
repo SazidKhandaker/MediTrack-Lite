@@ -271,6 +271,8 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                   const Spacer(),
 
                   /// 🔥 BOTTOM PANEL
+
+
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
@@ -540,34 +542,97 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
   void showTargetDialog() {
     showDialog(
       context: context,
+      barrierDismissible: true,
       builder: (context) {
-        return AlertDialog(
-          title: const Text("Select Your Target"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _targetOption(2000),
-              _targetOption(5000),
-              _targetOption(8000),
-              _targetOption(10000),
-              _targetOption(15000),
-              _targetOption(20000),
-            ],
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 15,
+                )
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                /// 🔥 TITLE
+                const Text(
+                  "🎯 Set Your Daily Target",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                /// 🔥 OPTIONS GRID
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    _targetChip(2000),
+                    _targetChip(5000),
+                    _targetChip(8000),
+                    _targetChip(10000),
+                    _targetChip(15000),
+                    _targetChip(20000),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                /// 🔥 CLOSE BUTTON
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _targetOption(int value) {
-    return ListTile(
-      title: Text("$value steps"),
+  Widget _targetChip(int value) {
+    bool isSelected = targetSteps == value;
+
+    return GestureDetector(
       onTap: () {
         setState(() {
           targetSteps = value;
         });
         Navigator.pop(context);
       },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue : Colors.white10,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.blue : Colors.white24,
+          ),
+        ),
+        child: Text(
+          "$value",
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }
