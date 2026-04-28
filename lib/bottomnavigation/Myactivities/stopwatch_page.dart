@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:meditrack/bottomnavigation/Myactivities/HistoryPage.dart' show HistoryPage;
 import 'package:pedometer/pedometer.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SmartActivityPage extends StatefulWidget {
   const SmartActivityPage({super.key});
@@ -18,7 +20,21 @@ enum ActivityType { running, walking, cycling }
 ActivityType selectedActivity = ActivityType.running;
 
 class _SmartActivityPageState extends State<SmartActivityPage> {
+  Future<void> saveActivity() async {
+    String today = DateTime.now().toString().substring(0, 10);
 
+    await FirebaseFirestore.instance
+        .collection("activity")
+        .doc(today)
+        .set({
+      "steps": steps,
+      "distance": distance,
+      "calories": calories,
+      "time": seconds, // 🔥 RAW TIME (seconds)
+      "formatted_time": formatDuration(seconds), // 🔥 readable
+      "date": today,
+    });
+  }
 
   /// 🔥 MAP
   GoogleMapController? mapController;
@@ -205,274 +221,478 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
     super.dispose();
     positionStream?.cancel();
   }
+  String formatDuration(int totalSeconds) {
+    int m = totalSeconds ~/ 60;
+    int s = totalSeconds % 60;
+    return "${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
+  }
+  Future<bool> _onBackPressed() async {
+    bool? result = await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 20,
+                )
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                /// 🔥 ICON
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.save,
+                    color: Colors.blue,
+                    size: 28,
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                /// 🔥 TITLE
+                const Text(
+                  "Save Activity?",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                /// 🔥 MESSAGE
+                const Text(
+                  "Do you want to save today's activity before leaving?",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70),
+                ),
+
+                const SizedBox(height: 20),
+
+                /// 🔥 BUTTONS
+                Row(
+                  children: [
+
+                    /// ❌ NO
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pop(context, false);
+                        },
+                        child: const Text(
+                          "No",
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    /// ✅ YES
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await saveActivity();
+                          Navigator.pop(context, true);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: const Text(
+                          "Yes",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    return result ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      body: Stack(
-        children: [
+    return WillPopScope(
+        onWillPop: () async {
+          return await _onBackPressed();
+        },
 
-          /// 🔥 GOOGLE MAP
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: currentLatLng,
-              zoom: 16,
+      child: Scaffold(
+        body: Stack(
+          children: [
+      
+            /// 🔥 GOOGLE MAP
+            GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: currentLatLng,
+                zoom: 16,
+              ),
+              markers: markers,
+              polylines: polylines, // 🔥 ADD THIS
+              myLocationEnabled: true,
+              onMapCreated: (controller) {
+                mapController = controller;
+              },
             ),
-            markers: markers,
-            polylines: polylines, // 🔥 ADD THIS
-            myLocationEnabled: true,
-            onMapCreated: (controller) {
-              mapController = controller;
-            },
-          ),
-
-          /// 🔥 UI OVERLAY
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-
-                  /// 🔥 TOP CARD
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.black.withOpacity(0.8)
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      children: [
-
-                        const Icon(Icons.directions_walk,
-                            size: 40, color: Colors.orange),
-
-                        const SizedBox(width: 10),
-
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("$steps steps",
-                                style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold)),
-                            Text(
-                                "${distance.toStringAsFixed(2)} km | ${calories.toStringAsFixed(0)} kcal"),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  /// 🔥 BOTTOM PANEL
-
-
-                  Container(
-
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                        )
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-
-                        /// 🔥 MODE BUTTONS
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _modeButton("Running", ActivityType.running),
-                            _modeButton("Walking", ActivityType.walking),
-                            _modeButton("Cycling", ActivityType.cycling),
-                          ],
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        /// 🔥 TIME + DISTANCE
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-
-                            Column(
-                              children: [
-                                Text(
-                                  formatTime(),
-                                  style: const TextStyle(
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white),
+      
+            /// 🔥 UI OVERLAY
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+      
+                    /// 🔥 TOP CARD
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.black.withOpacity(0.85)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+      
+                          /// 🟢 LEFT SIDE (ICON + DATA)
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                const Text("Elapsed time",
-                                    style: TextStyle(color: Colors.white70)),
-                              ],
-                            ),
-
-                              Column(children: [
-
-
-                                Icon(
-                                  selectedActivity == ActivityType.running
-                                      ? Icons.directions_run
-                                      : selectedActivity == ActivityType.walking
-                                      ? Icons.directions_walk
-                                      : Icons.directions_bike,
-                                  color: Colors.orange,
+                                child: const Icon(
+                                  Icons.directions_walk,
                                   size: 28,
+                                  color: Colors.orange,
                                 ),
-
-                                const SizedBox(height: 5),
-
-                                Text(
-                                  selectedActivity == ActivityType.running
-                                      ? "Keep running! 🔥"
-                                      : selectedActivity == ActivityType.walking
-                                      ? "Nice walk 👣"
-                                      : "Keep cycling 🚴",
-                                  style: const TextStyle(color: Colors.white70),
-                                ),
-                              ],
-
-
                               ),
-
-
-                            Column(
-                              children: [
-                                Text(
-                                  "${distance.toStringAsFixed(2)} km",
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                const Text("Distance",
-                                    style: TextStyle(color: Colors.white70)),
-                              ],
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        /// 🔥 STATS
-                        Row(
-                          children: [
-
-                            Expanded(
-                              child: _statCard(
-                                icon: Icons.local_fire_department,
-                                value: calories.toStringAsFixed(0),
-                                label: "kcal",
-                                color: Colors.orange,
-                              ),
-                            ),
-
-                            const SizedBox(width: 8),
-
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: showTargetDialog,
-                                child: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(16),
+      
+                              const SizedBox(width: 12),
+      
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "$steps steps",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                  child: Column(
-                                    children: [
-
-                                      /// 🔥 TITLE
-                                      const Text(
-                                        "Your Target",
-                                        style: TextStyle(color: Colors.blue),
-                                      ),
-
-                                      const SizedBox(height: 6),
-
-                                      /// 🔥 TARGET VALUE
-                                      Text(
-                                        "$targetSteps",
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.blue,
-                                        ),
-                                      ),
-
-                                      const Text("steps", style: TextStyle(color: Colors.blue)),
-
-                                      const SizedBox(height: 8),
-
-                                      /// 🔥 PROGRESS BAR
-                                      LinearProgressIndicator(
-                                        value: progress,
-                                        minHeight: 8,
-                                        borderRadius: BorderRadius.circular(10),
-                                        backgroundColor: Colors.white12,
-                                        valueColor: const AlwaysStoppedAnimation(Colors.blue),
-                                      ),
-
-                                      const SizedBox(height: 6),
-
-                                      /// 🔥 PERCENT
-                                      Text(
-                                        "${(progress * 100).toStringAsFixed(0)}% completed",
-                                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                                      ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "${distance.toStringAsFixed(2)} km • ${calories.toStringAsFixed(0)} kcal",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark ? Colors.white70 : Colors.black54,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+      
+                          /// 🔵 RIGHT SIDE (DATE + HISTORY)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+      
+                              /// 📅 DATE
+                              Text(
+                                DateTime.now().toString().substring(0, 10),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white70 : Colors.black54,
+                                ),
+                              ),
+      
+                              const SizedBox(height: 8),
+      
+                              /// 📊 HISTORY BUTTON
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const HistoryPage(),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Colors.blue, Colors.lightBlueAccent],
+                                    ),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blue.withOpacity(0.4),
+                                        blurRadius: 8,
+                                      )
                                     ],
                                   ),
+                                  child: const Icon(
+                                    Icons.calendar_month,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
-                            )
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        /// 🔥 CONTROL BUTTON
-                        GestureDetector(
-                          onTap: running ? stop : start,
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: running ? Colors.red : Colors.green,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (running ? Colors.red : Colors.green)
-                                      .withOpacity(0.5),
-                                  blurRadius: 10,
-                                )
-                              ],
-                            ),
-                            child: Icon(
-                              running ? Icons.pause : Icons.play_arrow,
-                              color: Colors.white,
-                              size: 30,
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+      
+                    const Spacer(),
+      
+                    /// 🔥 BOTTOM PANEL
+      
+      
+                    Container(
+      
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                          )
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+      
+                          /// 🔥 MODE BUTTONS
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _modeButton("Running", ActivityType.running),
+                              _modeButton("Walking", ActivityType.walking),
+                              _modeButton("Cycling", ActivityType.cycling),
+                            ],
+                          ),
+      
+                          const SizedBox(height: 10),
+      
+                          /// 🔥 TIME + DISTANCE
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+      
+                              Column(
+                                children: [
+                                  Text(
+                                    formatTime(),
+                                    style: const TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white),
+                                  ),
+                                  const Text("Elapsed time",
+                                      style: TextStyle(color: Colors.white70)),
+                                ],
+                              ),
+      
+                                Column(children: [
+      
+      
+                                  Icon(
+                                    selectedActivity == ActivityType.running
+                                        ? Icons.directions_run
+                                        : selectedActivity == ActivityType.walking
+                                        ? Icons.directions_walk
+                                        : Icons.directions_bike,
+                                    color: Colors.orange,
+                                    size: 28,
+                                  ),
+      
+                                  const SizedBox(height: 5),
+      
+                                  Text(
+                                    selectedActivity == ActivityType.running
+                                        ? "Keep running! 🔥"
+                                        : selectedActivity == ActivityType.walking
+                                        ? "Nice walk 👣"
+                                        : "Keep cycling 🚴",
+                                    style: const TextStyle(color: Colors.white70),
+                                  ),
+                                ],
+      
+      
+                                ),
+      
+      
+                              Column(
+                                children: [
+                                  Text(
+                                    "${distance.toStringAsFixed(2)} km",
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  const Text("Distance",
+                                      style: TextStyle(color: Colors.white70)),
+                                ],
+                              ),
+                            ],
+                          ),
+      
+                          const SizedBox(height: 14),
+      
+                          /// 🔥 STATS
+                          Row(
+                            children: [
+      
+                              Expanded(
+                                child: _statCard(
+                                  icon: Icons.local_fire_department,
+                                  value: calories.toStringAsFixed(0),
+                                  label: "kcal",
+                                  color: Colors.orange,
+                                ),
+                              ),
+      
+                              const SizedBox(width: 8),
+      
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: showTargetDialog,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Column(
+                                      children: [
+      
+                                        /// 🔥 TITLE
+                                        const Text(
+                                          "Your Target",
+                                          style: TextStyle(color: Colors.blue),
+                                        ),
+      
+                                        const SizedBox(height: 6),
+      
+                                        /// 🔥 TARGET VALUE
+                                        Text(
+                                          "$targetSteps",
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+      
+                                        const Text("steps", style: TextStyle(color: Colors.blue)),
+      
+                                        const SizedBox(height: 8),
+      
+                                        /// 🔥 PROGRESS BAR
+                                        LinearProgressIndicator(
+                                          value: progress,
+                                          minHeight: 8,
+                                          borderRadius: BorderRadius.circular(10),
+                                          backgroundColor: Colors.white12,
+                                          valueColor: const AlwaysStoppedAnimation(Colors.blue),
+                                        ),
+      
+                                        const SizedBox(height: 6),
+      
+                                        /// 🔥 PERCENT
+                                        Text(
+                                          "${(progress * 100).toStringAsFixed(0)}% completed",
+                                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+      
+                          const SizedBox(height: 16),
+      
+                          /// 🔥 CONTROL BUTTON
+                          GestureDetector(
+                            onTap: running ? stop : start,
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: running ? Colors.red : Colors.green,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (running ? Colors.red : Colors.green)
+                                        .withOpacity(0.5),
+                                    blurRadius: 10,
+                                  )
+                                ],
+                              ),
+                              child: Icon(
+                                running ? Icons.pause : Icons.play_arrow,
+                                color: Colors.white,
+                                size: 30,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-
-
-                      ],
-                    ),
-                  )
-                ],
+                          const SizedBox(height: 10),
+      
+      
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
-            ),
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
