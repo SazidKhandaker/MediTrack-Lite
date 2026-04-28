@@ -225,7 +225,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const StopwatchPage(),
+                        builder: (_) => const SmartActivityPage(),
                       ),
                     );
                   },
