@@ -193,6 +193,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
     timer?.cancel();
     stepStream?.cancel();
     super.dispose();
+    positionStream?.cancel();
   }
 
   @override
