@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:meditrack/splashscreen/SplashScreen.dart' show SplashScreen;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:meditrack/widget/notification_service.dart' show NotificationService;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:timezone/data/latest.dart' as tz;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp();
+
+  tz.initializeTimeZones(); // 🔥 MUST (timezone init)
+
+  await NotificationService.init(); // 🔥 MUST (notification init)
 
   final prefs = await SharedPreferences.getInstance();
   bool isDark = prefs.getBool('isDark') ?? false;
-  String lang = prefs.getString('lang') ?? 'en'; // 🔥 language load
+  String lang = prefs.getString('lang') ?? 'en';
 
   runApp(MyApp(isDark, lang));
 }
