@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meditrack/Utils/app_text.dart' show AppText;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:meditrack/widget/notification_service.dart' show NotificationService;
+import 'package:shared_preferences/shared_preferences.dart' show SharedPreferences;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:meditrack/bottomnavigation/profile/profilepage.dart';
 import 'package:meditrack/bottomnavigation/Myactivities/MyActivitiesPage.dart';
@@ -20,7 +21,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool isNotificationOn = false;
+  Future<void> loadNotificationState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isNotificationOn = prefs.getBool('notification') ?? false;
+    });
+  }
 
+  Future<void> saveNotificationState(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notification', value);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadNotificationState(); // 🔥 important
+  }
   DateTime selectedDate = DateTime.now();
 
   // 🔥 Firebase stream
@@ -74,10 +92,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
   int centerIndex = 50;
-  bool isReminderSet = false;
+
 
   @override
   Widget build(BuildContext context) {
+
 
     final lang = Localizations.localeOf(context).languageCode;
 
@@ -193,53 +212,35 @@ class _HomePageState extends State<HomePage> {
 
                       Column(
                         children: [
-                          GestureDetector(
-                  onTap: () async {
-                    await NotificationService.showTestNotification();
+                          GestureDetector(onTap: () async {
+                            setState(() {
+                              isNotificationOn = !isNotificationOn;
+                            });
 
-    if (!isReminderSet) {
-    // 🔥 TURN ON
+                            await saveNotificationState(isNotificationOn);
 
-    final now = DateTime.now();
+                            if (!isNotificationOn) {
+                              await NotificationService.cancelAll();
 
-    await NotificationService.scheduleMedicine(
-    name: "Medicine",
-    hour: now.hour,
-    minute: now.minute + 3,
-    beforeMin: 1,
-    );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Reminder OFF 🔕")),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Reminder ON 🔔")),
+                              );
+                            }
+                          },
 
-    setState(() {
-    isReminderSet = true;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("Reminder ON 🔔")),
-    );
-
-    } else {
-    // 🔥 TURN OFF
-
-    await NotificationService.cancelAll();
-
-    setState(() {
-    isReminderSet = false;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("Reminder OFF 🔕")),
-    );
-    }
-    },
                             child: Container(
                               margin: EdgeInsets.only(top: 4),
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
-                                color: isReminderSet ? Colors.green : Colors.red,
+                                color: isNotificationOn   ? Colors.green : Colors.red,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
-                                isReminderSet
+                                isNotificationOn
                                     ? Icons.notifications_active
                                     : Icons.notifications_off,
                                 color: Colors.white,
@@ -251,12 +252,12 @@ class _HomePageState extends State<HomePage> {
 
                           // 🔥 status text
                           Text(
-                            isReminderSet
+                            isNotificationOn
                                 ? "Reminder ON"
                                 : "Reminder OFF",
                             style: TextStyle(
                               fontSize: 10,
-                              color: isReminderSet ? Colors.green : Colors.red,
+                              color: isNotificationOn  ? Colors.green : Colors.red,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

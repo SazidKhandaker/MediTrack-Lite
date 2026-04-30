@@ -3,6 +3,7 @@ import 'package:meditrack/Utils/app_text.dart' show AppText;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meditrack/widget/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart' show SharedPreferences;
 
 class AddPage extends StatefulWidget {
   const AddPage({super.key});
@@ -147,58 +148,68 @@ class _AddPageState extends State<AddPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
+                  print("SAVE BUTTON CLICKED");
+                  // 🔥 STEP 1: notification ON কিনা check
+                  final prefs = await SharedPreferences.getInstance();
+                  bool isOn = prefs.getBool('notification') ?? false;
 
-                  if (nameController.text.isEmpty ||
-                      selectedTime == null ||
-                      selectedDate == null) {
-
+                  if (!isOn) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(AppText.fillAllFields(lang))),
+                      SnackBar(content: Text("Notification OFF")),
                     );
                     return;
                   }
+                  print("SAVE BUTTON CLICKED");
+                  // 🔥 STEP 2: confirm dialog
+                  bool? confirm = await showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: Text("Confirm"),
+                      content: Text("Set reminder?"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: Text("No"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: Text("Yes"),
+                        ),
+                      ],
+                    ),
+                  );
 
+                  if (confirm != true) return;
+
+                  // 🔥 STEP 3: Firebase save (existing code)
                   final user = FirebaseAuth.instance.currentUser;
 
-                  try {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user!.uid)
+                      .collection('medicines')
+                      .add({
+                    "name": nameController.text,
+                    "meal": selectedMeal,
+                    "time": selectedTime!.format(context),
+                    "date": selectedDate,
+                    "createdAt": Timestamp.now(),
+                    "status": false,
+                  });
 
-                    /// 🔥 FIREBASE SAVE
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user!.uid)
-                        .collection('medicines')
-                        .add({
-                      "name": nameController.text,
-                      "meal": selectedMeal,
-                      "time": selectedTime!.format(context),
-                      "date": selectedDate,
-                      "createdAt": Timestamp.now(),
-                      "status": false,
-                    });
-                    print("🔥 SAVE BUTTON CLICKED");
-                    await NotificationService.cancelAll();
+                  // 🔥 STEP 4: notification schedule
+                  await NotificationService.scheduleMedicine(
+                    name: nameController.text,
+                    hour: selectedTime!.hour,
+                    minute: selectedTime!.minute,
+                    beforeMin: 1,
+                  );
 
-                    /// 🔥 NOTIFICATION (FINAL FIX)
-                    int hour = selectedTime!.hour;
-                    int minute = selectedTime!.minute;
-                    print("🔥 BEFORE SCHEDULE");
-                    await NotificationService.scheduleMedicine(
-                      name: nameController.text,
-                      hour: hour,
-                      minute: minute,
-                      beforeMin: 1,
-                    );
-                    print("🔥 AFTER SCHEDULE");
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Reminder Set + Saved ✅")),
-                    );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Reminder Set")),
+                  );
 
-                    Navigator.pop(context);
-
-                  } catch (e) {
-                    print(e);
-                  }
-
+                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
