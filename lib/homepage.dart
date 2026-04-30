@@ -74,6 +74,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
   int centerIndex = 50;
+  bool isReminderSet = false;
 
   @override
   Widget build(BuildContext context) {
@@ -189,37 +190,76 @@ class _HomePageState extends State<HomePage> {
                    SizedBox(width: 8),
                   Row(
                     children: [
+                            
+                      Column(
+                        children: [
+                          GestureDetector(
+                  onTap: () async {
 
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child:GestureDetector(
-                          onTap: () async {
+    if (!isReminderSet) {
+    // 🔥 TURN ON
 
-                            await NotificationService.showTestNotification();
-                            final now = DateTime.now();
+    final now = DateTime.now();
 
-                            await NotificationService.scheduleMedicine(
-                              name: "Test",
-                              hour: now.hour,
-                              minute: now.minute + 3,
-                              beforeMin: 1,
-                            );
+    await NotificationService.scheduleMedicine(
+    name: "Medicine",
+    hour: now.hour,
+    minute: now.minute + 3,
+    beforeMin: 1,
+    );
 
+    setState(() {
+    isReminderSet = true;
+    });
 
+    ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("Reminder ON 🔔")),
+    );
 
+    } else {
+    // 🔥 TURN OFF
 
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Reminder Set ✅")),
+    await NotificationService.cancelAll();
 
-                            );
+    setState(() {
+    isReminderSet = false;
+    });
 
-                          },
-                          child: const Icon(Icons.notifications),
-                        ),
+    ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("Reminder OFF 🔕")),
+    );
+    }
+    },
+                            child: Container(
+                              margin: EdgeInsets.only(top: 4),
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: isReminderSet ? Colors.green : Colors.red,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                isReminderSet
+                                    ? Icons.notifications_active
+                                    : Icons.notifications_off,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 4),
+
+                          // 🔥 status text
+                          Text(
+                            isReminderSet
+                                ? "Reminder ON"
+                                : "Reminder OFF",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isReminderSet ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
 
                        SizedBox(width: 6),
@@ -241,7 +281,7 @@ class _HomePageState extends State<HomePage> {
                             final user = snapshot.data;
 
                             return CircleAvatar(
-                              radius: 18,
+                              radius: 20,
                               backgroundColor:
                               Colors.grey.shade300,
                               backgroundImage:
