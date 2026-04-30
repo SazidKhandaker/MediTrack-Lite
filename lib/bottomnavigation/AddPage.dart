@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:meditrack/Utils/app_text.dart' show AppText;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:meditrack/widget/notification_service.dart';
+
 class AddPage extends StatefulWidget {
   const AddPage({super.key});
 
@@ -14,17 +16,16 @@ class _AddPageState extends State<AddPage> {
   final nameController = TextEditingController();
 
   String selectedMeal = "After Meal";
-  String? selectedTime;
+  TimeOfDay? selectedTime; // 🔥 FIXED
   String? selectedDate;
 
   @override
   Widget build(BuildContext context) {
     final lang = Localizations.localeOf(context).languageCode;
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
+    return Scaffold(
       appBar: AppBar(
-        title:Text(AppText.addMedicine(lang)),
+        title: Text(AppText.addMedicine(lang)),
         centerTitle: true,
       ),
 
@@ -34,9 +35,9 @@ class _AddPageState extends State<AddPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // 🔥 TITLE
+            /// TITLE
             Text(
-              "${ AppText.addMedicineDetails(lang)}",
+              AppText.addMedicineDetails(lang),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -46,12 +47,12 @@ class _AddPageState extends State<AddPage> {
 
             const SizedBox(height: 20),
 
-            // 💊 Medicine Name
+            /// MEDICINE NAME
             _card(
               child: TextField(
                 controller: nameController,
                 decoration: InputDecoration(
-                  labelText: "${AppText.medicineName(lang)}",
+                  labelText: AppText.medicineName(lang),
                   prefixIcon: const Icon(Icons.medication),
                   border: InputBorder.none,
                 ),
@@ -60,42 +61,43 @@ class _AddPageState extends State<AddPage> {
 
             const SizedBox(height: 15),
 
-            // 🍽️ Meal
+            /// MEAL
             _card(
               child: DropdownButtonFormField<String>(
                 value: selectedMeal,
                 items: [
                   DropdownMenuItem(
-                      value: "Before Meal", child: Text("${AppText.beforeMeal(lang)}")),
-                   DropdownMenuItem(
-                      value: "After Meal", child: Text("${AppText.afterMeal(lang)}")),
+                    value: "Before Meal",
+                    child: Text(AppText.beforeMeal(lang)),
+                  ),
+                  DropdownMenuItem(
+                    value: "After Meal",
+                    child: Text(AppText.afterMeal(lang)),
+                  ),
                 ],
                 onChanged: (val) {
                   setState(() {
                     selectedMeal = val!;
                   });
                 },
-                decoration:  InputDecoration(
-                  labelText: "${AppText.instruction(lang)}",
+                decoration: InputDecoration(
+                  labelText: AppText.instruction(lang),
                   border: InputBorder.none,
-                  prefixIcon: Icon(Icons.restaurant),
+                  prefixIcon: const Icon(Icons.restaurant),
                 ),
               ),
             ),
 
             const SizedBox(height: 15),
 
-            // ⏰ TIME
+            /// TIME
             _card(
               child: ListTile(
                 leading: const Icon(Icons.access_time),
                 title: Text(
-                  selectedTime ?? "${AppText.selectTime(lang)}",
-                  style: TextStyle(
-                    color: selectedTime == null
-                        ? Colors.grey
-                        : Theme.of(context).colorScheme.onSurface,
-                  ),
+                  selectedTime == null
+                      ? AppText.selectTime(lang)
+                      : selectedTime!.format(context),
                 ),
                 onTap: () async {
                   TimeOfDay? picked = await showTimePicker(
@@ -105,7 +107,7 @@ class _AddPageState extends State<AddPage> {
 
                   if (picked != null) {
                     setState(() {
-                      selectedTime = picked.format(context);
+                      selectedTime = picked;
                     });
                   }
                 },
@@ -114,17 +116,12 @@ class _AddPageState extends State<AddPage> {
 
             const SizedBox(height: 15),
 
-            // 📅 DATE
+            /// DATE
             _card(
               child: ListTile(
                 leading: const Icon(Icons.calendar_today),
                 title: Text(
-                  selectedDate ?? "${AppText.selectDate(lang)}",
-                  style: TextStyle(
-                    color: selectedDate == null
-                        ? Colors.grey
-                        : Theme.of(context).colorScheme.onSurface,
-                  ),
+                  selectedDate ?? AppText.selectDate(lang),
                 ),
                 onTap: () async {
                   DateTime? picked = await showDatePicker(
@@ -145,49 +142,64 @@ class _AddPageState extends State<AddPage> {
 
             const SizedBox(height: 30),
 
-            // 🔥 SAVE BUTTON
+            /// SAVE BUTTON
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                  onPressed: () async {
+                onPressed: () async {
 
-                    if (nameController.text.isEmpty ||
-                        selectedTime == null ||
-                        selectedDate == null) {
+                  if (nameController.text.isEmpty ||
+                      selectedTime == null ||
+                      selectedDate == null) {
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppText.fillAllFields(lang))),
-                      );
-                      return;
-                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(AppText.fillAllFields(lang))),
+                    );
+                    return;
+                  }
 
-                    final user = FirebaseAuth.instance.currentUser;
+                  final user = FirebaseAuth.instance.currentUser;
 
-                    try {
-                      await FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(user!.uid)
-                          .collection('medicines')
-                          .add({
-                        "name": nameController.text,
-                        "meal": selectedMeal,
-                        "time": selectedTime,
-                        "date": selectedDate,
-                        "createdAt": Timestamp.now(),
-                        "status": false,
-                      });
+                  try {
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppText.saved(lang))),
-                      );
+                    /// 🔥 FIREBASE SAVE
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user!.uid)
+                        .collection('medicines')
+                        .add({
+                      "name": nameController.text,
+                      "meal": selectedMeal,
+                      "time": selectedTime!.format(context),
+                      "date": selectedDate,
+                      "createdAt": Timestamp.now(),
+                      "status": false,
+                    });
+                    print("🔥 SAVE BUTTON CLICKED");
+                    await NotificationService.cancelAll();
 
-                      Navigator.pop(context);
+                    /// 🔥 NOTIFICATION (FINAL FIX)
+                    int hour = selectedTime!.hour;
+                    int minute = selectedTime!.minute;
+                    print("🔥 BEFORE SCHEDULE");
+                    await NotificationService.scheduleMedicine(
+                      name: nameController.text,
+                      hour: hour,
+                      minute: minute,
+                      beforeMin: 1,
+                    );
+                    print("🔥 AFTER SCHEDULE");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Reminder Set + Saved ✅")),
+                    );
 
-                    } catch (e) {
-                      print(e);
-                    }
-                    print("🔥 Medicine saved to Firebase");
-                  },
+                    Navigator.pop(context);
+
+                  } catch (e) {
+                    print(e);
+                  }
+
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -199,6 +211,7 @@ class _AddPageState extends State<AddPage> {
                   "${AppText.saveMedicine(lang)}",
                   style: TextStyle(fontSize: 16),
                 ),
+
               ),
             ),
           ],
@@ -207,23 +220,20 @@ class _AddPageState extends State<AddPage> {
     );
   }
 
-  // 🔥 reusable card
   Widget _card({required Widget child}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-          )
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6)
         ],
       ),
       child: child,
     );
   }
+
   String formatDate(DateTime d) {
     return "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
   }

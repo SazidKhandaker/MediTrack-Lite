@@ -190,11 +190,12 @@ class _HomePageState extends State<HomePage> {
                    SizedBox(width: 8),
                   Row(
                     children: [
-                            
+
                       Column(
                         children: [
                           GestureDetector(
                   onTap: () async {
+                    await NotificationService.showTestNotification();
 
     if (!isReminderSet) {
     // 🔥 TURN ON

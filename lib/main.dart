@@ -5,14 +5,15 @@ import 'package:meditrack/widget/notification_service.dart' show NotificationSer
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timezone/data/latest.dart' as tz;
-
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp();
   await NotificationService.init();
   tz.initializeTimeZones(); // 🔥 MUST (timezone init)
-
+  tz.setLocalLocation(tz.getLocation('Asia/Dhaka'));
   await NotificationService.init(); // 🔥 MUST (notification init)
 
   final prefs = await SharedPreferences.getInstance();

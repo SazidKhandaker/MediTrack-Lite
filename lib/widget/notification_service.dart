@@ -13,7 +13,7 @@ class NotificationService {
 
     await _notification.initialize(settings);
 
-    // 🔥 ADD THIS (VERY IMPORTANT)
+    /// 🔥 CHANNEL
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'med_channel',
       'Medicine Reminder',
@@ -26,6 +26,8 @@ class NotificationService {
         AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
   }
+
+  /// 🔥 TEST NOTIFICATION
   static Future<void> showTestNotification() async {
     await _notification.show(
       0,
@@ -41,6 +43,7 @@ class NotificationService {
       ),
     );
   }
+
   /// 🔥 MAIN FUNCTION
   static Future<void> scheduleMedicine({
     required String name,
@@ -48,21 +51,20 @@ class NotificationService {
     required int minute,
     required int beforeMin,
   }) async {
-
     final scheduledTime = _nextInstance(hour, minute);
-    final reminderTime = scheduledTime.subtract(Duration(minutes: beforeMin));
+    final reminderTime =
+    scheduledTime.subtract(Duration(minutes: beforeMin));
 
+    print("NOW: ${DateTime.now()}");
+    print("SCHEDULED: $scheduledTime");
+    print("REMINDER: $reminderTime");
+
+    /// 🔥 1. TRY NORMAL SCHEDULE
     await _notification.zonedSchedule(
-      DateTime.now().millisecondsSinceEpoch % 100000,
-
-      // 🔥 সুন্দর title
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
       "💊 Medicine Time",
-
-      // 🔥 সুন্দর message
-      "⏰ $name নেওয়ার সময় হয়েছে\nPlease take your medicine now",
-
+      "⏰ $name নেওয়ার সময় হয়েছে",
       reminderTime,
-
       const NotificationDetails(
         android: AndroidNotificationDetails(
           "med_channel",
@@ -73,13 +75,34 @@ class NotificationService {
           enableVibration: true,
         ),
       ),
-
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-
       uiLocalNotificationDateInterpretation:
       UILocalNotificationDateInterpretation.absoluteTime,
     );
-  }// ✅ 🔥 IMPORTANT (function close)
+
+    /// 🔥 2. FALLBACK (IMPORTANT FIX)
+    final diff = reminderTime.difference(DateTime.now());
+
+    if (diff.inSeconds > 0) {
+      Future.delayed(diff, () async {
+        await _notification.show(
+          999,
+          "💊 Medicine Reminder",
+          "⏰ $name নেওয়ার সময় হয়েছে",
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              "med_channel",
+              "Medicine Reminder",
+              importance: Importance.max,
+              priority: Priority.high,
+              playSound: true,
+              enableVibration: true,
+            ),
+          ),
+        );
+      });
+    }
+  }
 
   /// 🔥 TIME CALCULATION
   static tz.TZDateTime _nextInstance(int hour, int minute) {
