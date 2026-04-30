@@ -68,11 +68,11 @@ class MedicineDetailPage extends StatelessWidget {
                       context: context,
                       builder: (_) => AlertDialog(
                         title: Text(AppText.remove(lang)),
-                        content: Text("Are you sure?"),
+                        content:lang=='bn'? Text("আপনি কি নিশ্চিত?")  :Text("Are you sure?") ,
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
-                            child: Text("AppText.cancel(lang)"),
+                            child: Text("${AppText.cancel(lang)}"),
                           ),
                           ElevatedButton(
                             onPressed: () => Navigator.pop(context, true),

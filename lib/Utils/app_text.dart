@@ -30,6 +30,9 @@ class AppText {
   static String save(String lang) {
     return lang == 'bn' ? "সংরক্ষণ করুন" : "Save";
   }
+  static String sureness(String lang){
+    return lang == 'bn'?   "আপনি কি নিশ্চিত?":"Are you sure?";
+  }
 
   static String language(String lang) {
     return lang == 'bn' ? "ভাষা" : "Language";
