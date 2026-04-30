@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meditrack/Utils/app_text.dart' show AppText;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:meditrack/widget/notification_service.dart' show NotificationService;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:meditrack/bottomnavigation/profile/profilepage.dart';
 import 'package:meditrack/bottomnavigation/Myactivities/MyActivitiesPage.dart';
@@ -195,8 +196,25 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.green,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.notifications,
-                            color: Colors.white,size: 20,),
+                        child:GestureDetector(
+                          onTap: () async {
+                            final now = DateTime.now();
+                            // 🔥 example data (test)
+                            await NotificationService.scheduleMedicine(
+                              name: "test",
+                              hour: now.hour,
+                              minute: now.minute + 2,
+                              beforeMin: 1, // 🔥 test এর জন্য 1 minute আগে
+                            );
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Reminder Set ✅")),
+
+                            );
+
+                          },
+                          child: const Icon(Icons.notifications),
+                        ),
                       ),
 
                        SizedBox(width: 6),

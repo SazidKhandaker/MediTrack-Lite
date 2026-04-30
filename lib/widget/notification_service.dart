@@ -1,15 +1,12 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notification =
   FlutterLocalNotificationsPlugin();
 
-  /// 🔥 INIT (app start এ call করবে)
+  /// 🔥 INIT
   static Future<void> init() async {
-    tz.initializeTimeZones();
-
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const settings = InitializationSettings(
@@ -19,7 +16,7 @@ class NotificationService {
     await _notification.initialize(settings);
   }
 
-  /// 🔥 MAIN FUNCTION (medicine reminder)
+  /// 🔥 MAIN FUNCTION
   static Future<void> scheduleMedicine({
     required String name,
     required int hour,
@@ -33,9 +30,9 @@ class NotificationService {
     scheduledTime.subtract(Duration(minutes: beforeMin));
 
     await _notification.zonedSchedule(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      (DateTime.now().millisecondsSinceEpoch % 100000),
       "💊 Medicine Reminder",
-      "$name নিতে হবে ${beforeMin} মিনিট পরে",
+      "$name নিতে হবে $beforeMin মিনিট পরে",
       reminderTime,
       const NotificationDetails(
         android: AndroidNotificationDetails(
@@ -45,10 +42,13 @@ class NotificationService {
           priority: Priority.high,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time, // 🔁 daily repeat
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+      uiLocalNotificationDateInterpretation:
+      UILocalNotificationDateInterpretation.absoluteTime,
     );
-  }
+    print("Reminder scheduled at: $reminderTime");
+  } // ✅ 🔥 IMPORTANT (function close)
 
   /// 🔥 TIME CALCULATION
   static tz.TZDateTime _nextInstance(int hour, int minute) {
@@ -70,7 +70,7 @@ class NotificationService {
     return scheduled;
   }
 
-  /// 🔥 ALL NOTIFICATION CANCEL (optional)
+  /// 🔥 CANCEL ALL
   static Future<void> cancelAll() async {
     await _notification.cancelAll();
   }
