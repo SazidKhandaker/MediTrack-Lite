@@ -148,40 +148,7 @@ class _AddPageState extends State<AddPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-                  print("SAVE BUTTON CLICKED");
-                  // 🔥 STEP 1: notification ON কিনা check
-                  final prefs = await SharedPreferences.getInstance();
-                  bool isOn = prefs.getBool('notification') ?? false;
 
-                  if (!isOn) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Notification OFF")),
-                    );
-                    return;
-                  }
-                  print("SAVE BUTTON CLICKED");
-                  // 🔥 STEP 2: confirm dialog
-                  bool? confirm = await showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: Text("Confirm"),
-                      content: Text("Set reminder?"),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: Text("No"),
-                        ),
-                        ElevatedButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: Text("Yes"),
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (confirm != true) return;
-
-                  // 🔥 STEP 3: Firebase save (existing code)
                   final user = FirebaseAuth.instance.currentUser;
 
                   await FirebaseFirestore.instance
@@ -191,22 +158,13 @@ class _AddPageState extends State<AddPage> {
                       .add({
                     "name": nameController.text,
                     "meal": selectedMeal,
-                    "time": selectedTime!.format(context),
+                    "time": selectedTime!.format(context), // "3:35 PM"
                     "date": selectedDate,
                     "createdAt": Timestamp.now(),
-                    "status": false,
                   });
 
-                  // 🔥 STEP 4: notification schedule
-                  await NotificationService.scheduleMedicine(
-                    name: nameController.text,
-                    hour: selectedTime!.hour,
-                    minute: selectedTime!.minute,
-                    beforeMin: 1,
-                  );
-
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Reminder Set")),
+                    SnackBar(content: Text("Medicine Saved")),
                   );
 
                   Navigator.pop(context);

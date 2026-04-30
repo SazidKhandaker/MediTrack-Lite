@@ -22,6 +22,48 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isNotificationOn = false;
+  Map<String, int> parseTime(String time) {
+
+    // 🔥 Bangla → English convert
+    const bn = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+    const en = ['0','1','2','3','4','5','6','7','8','9'];
+
+    for (int i = 0; i < bn.length; i++) {
+      time = time.replaceAll(bn[i], en[i]);
+    }
+
+    final parts = time.split(":");
+
+    int hour = int.parse(parts[0]);
+    int minute = int.parse(parts[1].split(" ")[0]);
+
+    if (time.contains("PM") && hour != 12) hour += 12;
+    if (time.contains("AM") && hour == 12) hour = 0;
+
+    return {"hour": hour, "minute": minute};
+  }
+  Future<void> scheduleAllFromDB() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('medicines')
+        .get();
+
+    for (var doc in snapshot.docs) {
+      final data = doc.data();
+
+      final time = parseTime(data['time']);
+
+      await NotificationService.scheduleMedicine(
+        name: data['name'],
+        hour: time['hour']!,
+        minute: time['minute']!,
+        beforeMin: 1,
+      );
+    }
+  }
   Future<void> loadNotificationState() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -38,6 +80,24 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadNotificationState(); // 🔥 important
+    Future.delayed(Duration.zero, () async {
+      final prefs = await SharedPreferences.getInstance();
+      bool isOn = prefs.getBool('notification') ?? false;
+
+      if (isOn) {
+        // 🔥 auto schedule
+        final user = FirebaseAuth.instance.currentUser;
+
+        final snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user!.uid)
+            .collection('medicines')
+            .get();
+
+        if (isOn) {
+          await scheduleAllFromDB();
+        }
+      }});
   }
   DateTime selectedDate = DateTime.now();
 
@@ -212,27 +272,57 @@ class _HomePageState extends State<HomePage> {
 
                       Column(
                         children: [
-                          GestureDetector(onTap: () async {
-                            setState(() {
-                              isNotificationOn = !isNotificationOn;
-                            });
+                          GestureDetector(
+                  onTap: () async {
+    setState(() {
+    isNotificationOn = !isNotificationOn;
+    });
 
-                            await saveNotificationState(isNotificationOn);
+    await saveNotificationState(isNotificationOn);
 
-                            if (!isNotificationOn) {
-                              await NotificationService.cancelAll();
+    if (isNotificationOn) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text("Reminder ON 🔔")),
+    );
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Reminder OFF 🔕")),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Reminder ON 🔔")),
-                              );
-                            }
-                          },
+    // 🔥 FETCH FROM FIREBASE
+    final user = FirebaseAuth.instance.currentUser;
 
-                            child: Container(
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('medicines')
+        .get();
+
+    // 🔥 LOOP + schedule
+    if (isNotificationOn) {
+
+      await scheduleAllFromDB(); // 🔥 clean
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Reminder ON 🔔")),
+      );
+
+    } else {
+
+      await NotificationService.cancelAll();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Reminder OFF 🔕")),
+      );
+    }
+
+    } else {
+    // 🔴 OFF → cancel সব
+    await NotificationService.cancelAll();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text("Reminder OFF 🔕")),
+    );
+    }
+    }
+
+                            ,child: Container(
                               margin: EdgeInsets.only(top: 4),
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
