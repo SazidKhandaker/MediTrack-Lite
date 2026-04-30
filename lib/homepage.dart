@@ -198,14 +198,19 @@ class _HomePageState extends State<HomePage> {
                         ),
                         child:GestureDetector(
                           onTap: () async {
+
+                            await NotificationService.showTestNotification();
                             final now = DateTime.now();
-                            // 🔥 example data (test)
+
                             await NotificationService.scheduleMedicine(
-                              name: "test",
+                              name: "Test",
                               hour: now.hour,
-                              minute: now.minute + 2,
-                              beforeMin: 1, // 🔥 test এর জন্য 1 minute আগে
+                              minute: now.minute + 3,
+                              beforeMin: 1,
                             );
+
+
+
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text("Reminder Set ✅")),

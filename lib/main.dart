@@ -10,7 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp();
-
+  await NotificationService.init();
   tz.initializeTimeZones(); // 🔥 MUST (timezone init)
 
   await NotificationService.init(); // 🔥 MUST (notification init)

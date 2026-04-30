@@ -9,13 +9,38 @@ class NotificationService {
   static Future<void> init() async {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const settings = InitializationSettings(
-      android: android,
-    );
+    const settings = InitializationSettings(android: android);
 
     await _notification.initialize(settings);
-  }
 
+    // 🔥 ADD THIS (VERY IMPORTANT)
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'med_channel',
+      'Medicine Reminder',
+      description: 'Reminder for medicines',
+      importance: Importance.max,
+    );
+
+    await _notification
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+  }
+  static Future<void> showTestNotification() async {
+    await _notification.show(
+      0,
+      "TEST 🔔",
+      "Notification working",
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          "test_channel",
+          "Test",
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+    );
+  }
   /// 🔥 MAIN FUNCTION
   static Future<void> scheduleMedicine({
     required String name,
@@ -25,30 +50,36 @@ class NotificationService {
   }) async {
 
     final scheduledTime = _nextInstance(hour, minute);
-
-    final reminderTime =
-    scheduledTime.subtract(Duration(minutes: beforeMin));
+    final reminderTime = scheduledTime.subtract(Duration(minutes: beforeMin));
 
     await _notification.zonedSchedule(
-      (DateTime.now().millisecondsSinceEpoch % 100000),
-      "💊 Medicine Reminder",
-      "$name নিতে হবে $beforeMin মিনিট পরে",
+      DateTime.now().millisecondsSinceEpoch % 100000,
+
+      // 🔥 সুন্দর title
+      "💊 Medicine Time",
+
+      // 🔥 সুন্দর message
+      "⏰ $name নেওয়ার সময় হয়েছে\nPlease take your medicine now",
+
       reminderTime,
+
       const NotificationDetails(
         android: AndroidNotificationDetails(
           "med_channel",
           "Medicine Reminder",
           importance: Importance.max,
           priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
         ),
       ),
+
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
+
       uiLocalNotificationDateInterpretation:
       UILocalNotificationDateInterpretation.absoluteTime,
     );
-    print("Reminder scheduled at: $reminderTime");
-  } // ✅ 🔥 IMPORTANT (function close)
+  }// ✅ 🔥 IMPORTANT (function close)
 
   /// 🔥 TIME CALCULATION
   static tz.TZDateTime _nextInstance(int hour, int minute) {
