@@ -92,6 +92,15 @@ class _LoginPageState extends State<LoginPage>
         await FirebaseAuth.instance.signOut();
         return;
       }
+      showSnack(
+        lang == "bn"
+            ? "লগইন সফল হয়েছে ✅"
+            : "Login Successful ✅",
+        color: Colors.green,
+      );
+
+// 🔥 delay 1 second
+      await Future.delayed(const Duration(seconds: 1));
 
       Navigator.pushReplacement(
         context,
