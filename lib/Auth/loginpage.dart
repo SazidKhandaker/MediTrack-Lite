@@ -153,13 +153,37 @@ class _LoginPageState extends State<LoginPage>
 
       await FirebaseAuth.instance.signOut();
 
-    } catch (e) {
-      showSnack(
-        lang == "bn"
-            ? "সাইন আপ ব্যর্থ ❌ $e"
-            : "Signup Failed ❌$e",
-      );
     }
+
+   on FirebaseAuthException catch (e) {
+  if (e.code == 'email-already-in-use') {
+  showSnack(
+  lang == "bn"
+  ? "এই ইমেইল দিয়ে ইতিমধ্যে অ্যাকাউন্ট আছে"
+      : "This email already has an account",
+  );
+  } else if (e.code == 'weak-password') {
+  showSnack(
+  lang == "bn"
+  ? "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে"
+      : "Password should be at least 6 characters",
+  );
+  } else if (e.code == 'invalid-email') {
+  showSnack(
+  lang == "bn"
+  ? "সঠিক ইমেইল দিন"
+      : "Enter a valid email",
+  );
+  } else {
+  showSnack(
+  lang == "bn"
+  ? "সাইন আপ ব্যর্থ ❌"
+      : "Signup Failed ❌",
+  );
+  }
+  } catch (e) {
+  showSnack(e.toString());
+  }
   }
 
   @override
