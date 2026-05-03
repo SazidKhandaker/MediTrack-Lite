@@ -80,7 +80,6 @@ class _LoginPageState extends State<LoginPage>
       );
 
       final user = userCredential.user!;
-
       await user.reload();
 
       if (!user.emailVerified) {
@@ -99,12 +98,42 @@ class _LoginPageState extends State<LoginPage>
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
 
+    } on FirebaseAuthException catch (e) {
+
+      print("LOGIN ERROR: ${e.code}");
+
+      if (e.code == 'user-not-found') {
+        showSnack(
+          lang == "bn"
+              ? "এই ইমেইলে কোনো অ্যাকাউন্ট নেই"
+              : "No account found with this email",
+        );
+
+      } else if (e.code == 'wrong-password' ||
+          e.code == 'invalid-credential') {
+        showSnack(
+          lang == "bn"
+              ? "ইমেইল বা পাসওয়ার্ড ভুল"
+              : "Email or password is incorrect",
+        );
+
+      } else if (e.code == 'invalid-email') {
+        showSnack(
+          lang == "bn"
+              ? "সঠিক ইমেইল দিন"
+              : "Enter a valid email",
+        );
+
+      } else {
+        showSnack(
+          lang == "bn"
+              ? "লগইন ব্যর্থ ❌"
+              : "Login Failed ❌",
+        );
+      }
+
     } catch (e) {
-      showSnack(
-        lang == "bn"
-            ? "লগইন ব্যর্থ ❌"
-            : "Login Failed ❌",
-      );
+      showSnack(e.toString());
     }
   }
 

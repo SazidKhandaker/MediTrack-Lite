@@ -72,47 +72,81 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
     final lang = Localizations.localeOf(context).languageCode;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          lang == "bn" ? "পাসওয়ার্ড ভুলে গেছেন" : "Forgot Password",
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            lang == "bn" ? "পাসওয়ার্ড ভুলে গেছেন" : "Forgot Password",
+          ),
         ),
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-
-            const SizedBox(height: 40),
-
-            Icon(Icons.lock_reset, size: 80, color: Colors.green),
-
-            const SizedBox(height: 20),
-
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(
-                hintText: lang == "bn" ? "ইমেইল লিখুন" : "Enter your email",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+      
+        body: Padding(
+          padding: const EdgeInsets.all(20),
+          child:SingleChildScrollView(child:  Column(
+            children: [
+      
+              const SizedBox(height: 40),
+      
+              Icon(Icons.lock_reset, size: 80, color: Colors.green),
+      
+              const SizedBox(height: 20),
+      
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  hintText: lang == "bn" ? "ইমেইল লিখুন" : "Enter your email",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+      
+              const SizedBox(height: 20),
+      
+          GestureDetector(
+            onTap: resetPassword,
+            child: Container(
+              transform: Matrix4.identity()..scale(0.97),
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                vertical: MediaQuery.of(context).size.height * 0.018,
+              ),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF2F9E5B),
+                    Color(0xFF1B6B73),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                    lang == "bn"
+                        ? "রিসেট লিংক পাঠান"
+                        : "Send Reset Link",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: MediaQuery.of(context).size.width * 0.045,
+                  ),
                 ),
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: resetPassword,
-              child: Text(
-                lang == "bn"
-                    ? "রিসেট লিংক পাঠান"
-                    : "Send Reset Link",
-              ),
-            ),
-          ],
+          )],
+          ),
         ),
       ),
-    );
+    ));
+
   }
+
+
 }
