@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart' show GoogleSignInAccount, GoogleSignInAuthentication, GoogleSignIn;
 import 'package:meditrack/Auth/forgetpassword.dart' show ForgotPasswordPage;
 import '../homepage.dart' show HomePage;
 
@@ -56,7 +57,50 @@ class _LoginPageState extends State<LoginPage>
       SnackBar(content: Text(message), backgroundColor: color),
     );
   }
+  Future<void> signInWithGoogle() async {
+    final lang = Localizations.localeOf(context).languageCode;
 
+    try {
+      print("START GOOGLE LOGIN");
+
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+
+      final GoogleSignInAccount? googleUser =
+      await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        print("USER CANCELLED");
+        return;
+      }
+
+      print("USER SELECTED: ${googleUser.email}");
+
+      final googleAuth = await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      showSnack(
+        lang == "bn"
+            ? "গুগল লগইন সফল ✅"
+            : "Google login successful ✅",
+        color: Colors.green,
+      );
+
+    } catch (e) {
+      print("GOOGLE ERROR: $e");
+
+      showSnack(
+        lang == "bn"
+            ? "গুগল লগইন ব্যর্থ ❌"
+            : "Google login failed ❌",
+      );
+    }
+  }
   Future<void> validateAndLogin() async {
     final lang = Localizations.localeOf(context).languageCode;
 
@@ -405,18 +449,22 @@ class _LoginPageState extends State<LoginPage>
   }
 
   Widget _googleBtn(String lang) {
-    return _socialButton(
-      text: lang == "bn"
-          ? "গুগল দিয়ে চালান"
-          : "Continue with Google",
-      bgColor: Colors.white,
-      textColor: Colors.black,
-      icon: const Text(
-        "G",
-        style: TextStyle(
+    return GestureDetector(
+      onTap: signInWithGoogle, // 🔥 add this
+      child: _socialButton(
+        text: lang == "bn"
+            ? "গুগল দিয়ে চালান"
+            : "Continue with Google",
+        bgColor: Colors.white,
+        textColor: Colors.black,
+        icon: const Text(
+          "G",
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.red,
-            fontSize: 18),
+            fontSize: 18,
+          ),
+        ),
       ),
     );
   }
