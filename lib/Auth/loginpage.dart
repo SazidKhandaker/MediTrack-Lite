@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import '../homepage.dart' show Homepage, HomePage;
+import '../homepage.dart' show HomePage;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,6 +11,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
+
   late TabController _tabController;
 
   bool isChecked = false;
@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage>
     _tabController.dispose();
     emailController.dispose();
     passwordController.dispose();
-    nameController.dispose(); // 🔥 FIX
+    nameController.dispose();
     super.dispose();
   }
 
@@ -41,8 +41,6 @@ class _LoginPageState extends State<LoginPage>
       SnackBar(
         content: Text(message),
         backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(10),
       ),
     );
   }
@@ -65,33 +63,17 @@ class _LoginPageState extends State<LoginPage>
       );
 
       if (userCredential.user != null) {
-        showSnack("Login successful ✅", color: Colors.green);
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomePage()),
         );
       }
-
-    } on FirebaseAuthException catch (e) {
-      print("ERROR CODE: ${e.code}"); // 🔥 debug
-
-      if (e.code == 'user-not-found') {
-        showSnack("User not found ❌");
-      } else if (e.code == 'wrong-password') {
-        showSnack("Wrong password ❌");
-      } else if (e.code == 'invalid-email') {
-        showSnack("Invalid email ❌");
-      } else {
-        showSnack(e.message ?? "Login failed");
-      }
     } catch (e) {
-      print("UNKNOWN ERROR: $e"); // 🔥 debug
-      showSnack("Something went wrong ❌");
+      showSnack("Login Failed ❌");
     }
   }
 
-  // 🆕 SIGNUP + NAME SAVE
+  // 🆕 SIGNUP
   Future<void> validateAndSignup() async {
     String name = nameController.text.trim();
     String email = emailController.text.trim();
@@ -103,7 +85,7 @@ class _LoginPageState extends State<LoginPage>
     }
 
     if (!isChecked) {
-      showSnack("Please accept terms");
+      showSnack("Accept terms");
       return;
     }
 
@@ -116,118 +98,105 @@ class _LoginPageState extends State<LoginPage>
 
       await userCredential.user!.updateDisplayName(name);
 
-      showSnack("Signup successful ✅", color: Colors.green);
-
-      // 🔥 IMPORTANT
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
-      await userCredential.user!.reload();
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use') {
-        showSnack("Email already used");
-      } else if (e.code == 'weak-password') {
-        showSnack("Weak password");
-      } else {
-        showSnack(e.message ?? "Signup error");
-      }
+    } catch (e) {
+      showSnack("Signup Failed ❌");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
 
-      bottomNavigationBar: Container(
-        height: 100,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF0F4C5C), Color(0xFF1B6B73)],
-          ),
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            const Positioned(
-              left: 20,
-              bottom: 50,
-              child: Text(
-                "Forgot Password?",
-                style: TextStyle(color: Colors.white70),
-              ),
-            ),
-            Positioned(
-              bottom: 65,
-              right: 20,
-              child: GestureDetector(
-                onTap: () {
-                  if (_tabController.index == 0) {
-                    validateAndLogin();
-                  } else {
-                    validateAndSignup();
-                  }
-                },
-                child: Container(
-                  height: 65,
-                  width: 65,
-                  decoration: BoxDecoration(
-                    color: Color(0xFFD4AF7A),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      )
-                    ],
-                  ),
-                  child: Icon(
-                    _tabController.index == 0
-                        ? Icons.login
-                        : Icons.app_registration,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    final lang = Localizations.localeOf(context).languageCode;
 
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
+    return SafeArea(
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+      
+        bottomNavigationBar: Container(
+          height: MediaQuery.of(context).size.height * 0.12,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF2F9E5B), Color(0xFF2E8B57)],
+              colors: [Color(0xFF0F4C5C), Color(0xFF1B6B73)],
             ),
           ),
-          child: Column(
+          child: Stack(
             children: [
-              const SizedBox(height: 20),
-
-              TabBar(
-                controller: _tabController,
-                indicatorColor: Colors.white,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                tabs: const [
-                  Tab(text: "Log In"),
-                  Tab(text: "Sign Up"),
-                ],
+              Positioned(
+                left: 20,
+                bottom: 20,
+                child: Text(
+                  lang == "bn" ? "পাসওয়ার্ড ভুলে গেছেন?" : "Forgot Password?",
+                  style: const TextStyle(color: Colors.white70),
+                ),
               ),
-
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildLogin(),
-                    _buildSignup(),
-                  ],
+              Positioned(
+                right: 20,
+                bottom: 20,
+                child: GestureDetector(
+                  onTap: () {
+                    if (_tabController.index == 0) {
+                      validateAndLogin();
+                    } else {
+                      validateAndSignup();
+                    }
+                  },
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFD4AF7A),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _tabController.index == 0
+                          ? Icons.login
+                          : Icons.app_registration,
+                    ),
+                  ),
                 ),
               ),
             ],
+          ),
+        ),
+      
+        body: SafeArea(
+          child: Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF2F9E5B), Color(0xFF2E8B57)],
+              ),
+            ),
+            child: Column(
+              children: [
+      
+                const SizedBox(height: 20),
+      
+                TabBar(
+                  controller: _tabController,
+                  labelColor: Colors.white,
+                  indicatorColor: Colors.white,
+                  tabs: [
+                    Tab(text: lang == "bn" ? "লগইন" : "Log In"),
+                    Tab(text: lang == "bn" ? "সাইন আপ" : "Sign Up"),
+                  ],
+                ),
+      
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildLogin(lang),
+                      _buildSignup(lang),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -235,137 +204,137 @@ class _LoginPageState extends State<LoginPage>
   }
 
   // 🔹 LOGIN UI
-  Widget _buildLogin() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          const Icon(Icons.person, color: Colors.white, size: 60),
-          const SizedBox(height: 20),
-
-          _textField("Email", controller: emailController),
-          const SizedBox(height: 15),
-          _textField("Password",
-              isPassword: true, controller: passwordController),
-
-          const SizedBox(height: 20),
-
-          _socialButton(
-            text: "Continue with Google",
-            bgColor: Colors.white,
-            textColor: Colors.black,
-            icon: Icons.g_mobiledata,
+  Widget _buildLogin(String lang) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           ),
-          _socialButton(
-            text: "Continue with Facebook",
-            bgColor: Color(0xFF1877F2),
-            textColor: Colors.white,
-            icon: Icons.facebook,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              children: [
+
+                const SizedBox(height: 30),
+
+                const Icon(Icons.person, size: 60, color: Colors.white),
+
+                const SizedBox(height: 20),
+
+                _textField(lang == "bn" ? "ইমেইল" : "Email", emailController),
+
+                const SizedBox(height: 15),
+
+                _textField(lang == "bn" ? "পাসওয়ার্ড" : "Password",
+                    passwordController,
+                    isPassword: true),
+
+                const SizedBox(height: 20),
+
+                _button(lang == "bn"
+                    ? "গুগল দিয়ে চালান"
+                    : "Continue with Google"),
+
+                _button(lang == "bn"
+                    ? "ফেসবুক দিয়ে চালান"
+                    : "Continue with Facebook"),
+
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   // 🔹 SIGNUP UI
-  Widget _buildSignup() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8,left: 15,right: 15),
-      child: Column(
-        children: [
-          const Icon(Icons.person_add, color: Colors.white, size: 60),
-          const SizedBox(height: 8),
-
-          // 🔥 FIXED
-          _textField("Name", controller: nameController),
-
-          const SizedBox(height: 8),
-          _textField("Email", controller: emailController),
-
-          const SizedBox(height: 8),
-          _textField("Password",
-              isPassword: true, controller: passwordController),
-
-          const SizedBox(height: 8),
-
-          _socialButton(
-            text: "Sign up with Google",
-            bgColor: Colors.white,
-            textColor: Colors.black,
-            icon: Icons.g_mobiledata,
+  Widget _buildSignup(String lang) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           ),
-          _socialButton(
-            text: "Sign up with Facebook",
-            bgColor: Color(0xFF1877F2),
-            textColor: Colors.white,
-            icon: Icons.facebook,
-          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              children: [
 
-          Row(
-            children: [
-              Checkbox(
-                value: isChecked,
-                onChanged: (value) {
-                  setState(() {
-                    isChecked = value!;
-                  });
-                },
-              ),
-              const Text("I agree to Terms",
-                  style: TextStyle(color: Colors.white70)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+                const SizedBox(height: 20),
 
-  Widget _socialButton({
-    required String text,
-    required Color bgColor,
-    required Color textColor,
-    required IconData icon,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        showSnack("$text clicked", color: Colors.blue);
-      },
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(vertical: 6),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              offset: Offset(0, 3),
-            )
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: textColor),
-            const SizedBox(width: 10),
-            Text(
-              text,
-              style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
+                const Icon(Icons.person_add, size: 60, color: Colors.white),
+
+                const SizedBox(height: 10),
+
+                _textField(lang == "bn" ? "নাম" : "Name", nameController),
+
+                const SizedBox(height: 10),
+
+                _textField(lang == "bn" ? "ইমেইল" : "Email", emailController),
+
+                const SizedBox(height: 10),
+
+                _textField(lang == "bn" ? "পাসওয়ার্ড" : "Password",
+                    passwordController,
+                    isPassword: true),
+
+                const SizedBox(height: 15),
+
+                _button(lang == "bn"
+                    ? "গুগল দিয়ে সাইন আপ"
+                    : "Sign up with Google"),
+
+                _button(lang == "bn"
+                    ? "ফেসবুক দিয়ে সাইন আপ"
+                    : "Sign up with Facebook"),
+
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isChecked,
+                      onChanged: (v) => setState(() => isChecked = v!),
+                    ),
+                    Text(
+                      lang == "bn"
+                          ? "আমি শর্তাবলীতে সম্মত"
+                          : "I agree to Terms",
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _button(String text) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Text(
+          text,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 
-  Widget _textField(String hint,
-      {bool isPassword = false, TextEditingController? controller}) {
+  Widget _textField(String hint, TextEditingController controller,
+      {bool isPassword = false}) {
     return TextField(
       controller: controller,
       obscureText: isPassword,
