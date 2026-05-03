@@ -156,8 +156,8 @@ class _LoginPageState extends State<LoginPage>
     } catch (e) {
       showSnack(
         lang == "bn"
-            ? "সাইন আপ ব্যর্থ ❌"
-            : "Signup Failed ❌",
+            ? "সাইন আপ ব্যর্থ ❌ $e"
+            : "Signup Failed ❌$e",
       );
     }
   }
@@ -169,7 +169,7 @@ class _LoginPageState extends State<LoginPage>
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-      
+
         // 🔥 FLOATING BUTTON BAR
         bottomNavigationBar: Container(
           height: MediaQuery.of(context).size.height * 0.09,
@@ -181,7 +181,7 @@ class _LoginPageState extends State<LoginPage>
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-      
+
               Positioned(
                 left: 20,
                 bottom: 20,
@@ -192,7 +192,7 @@ class _LoginPageState extends State<LoginPage>
                   style: const TextStyle(color: Colors.white70),
                 ),
               ),
-      
+
               // 🔥 ANIMATED FLOAT BUTTON
               Positioned(
                 right: 20,
@@ -237,7 +237,7 @@ class _LoginPageState extends State<LoginPage>
             ],
           ),
         ),
-      
+
         body: SafeArea(
           child: Container(
             decoration: const BoxDecoration(
@@ -247,9 +247,9 @@ class _LoginPageState extends State<LoginPage>
             ),
             child: Column(
               children: [
-      
+
                 SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-      
+
                 TabBar(
                   controller: _tabController,
                   labelColor: Colors.white,
@@ -259,7 +259,7 @@ class _LoginPageState extends State<LoginPage>
                     Tab(text: lang == "bn" ? "সাইন আপ" : "Sign Up"),
                   ],
                 ),
-      
+
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
