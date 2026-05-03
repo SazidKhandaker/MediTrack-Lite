@@ -10,9 +10,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
 
   late TabController _tabController;
+
+  // 🔥 animation
+  late AnimationController _btnController;
+  late Animation<double> _scaleAnim;
 
   bool isChecked = false;
 
@@ -23,12 +27,23 @@ class _LoginPageState extends State<LoginPage>
   @override
   void initState() {
     _tabController = TabController(length: 2, vsync: this);
+
+    _btnController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+
+    _scaleAnim = Tween<double>(begin: 1, end: 0.9).animate(
+      CurvedAnimation(parent: _btnController, curve: Curves.easeInOut),
+    );
+
     super.initState();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _btnController.dispose();
     emailController.dispose();
     passwordController.dispose();
     nameController.dispose();
@@ -36,51 +51,37 @@ class _LoginPageState extends State<LoginPage>
   }
 
   void showSnack(String message, {Color color = Colors.red}) {
-    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-      ),
+      SnackBar(content: Text(message), backgroundColor: color),
     );
   }
 
-  // 🔐 LOGIN
   Future<void> validateAndLogin() async {
-    String email = emailController.text.trim();
-    String password = passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      showSnack("Required Fields are empty");
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      showSnack("Fill all fields");
       return;
     }
 
     try {
-      UserCredential userCredential =
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
 
-      if (userCredential.user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
-        );
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
     } catch (e) {
       showSnack("Login Failed ❌");
     }
   }
 
-  // 🆕 SIGNUP
   Future<void> validateAndSignup() async {
-    String name = nameController.text.trim();
-    String email = emailController.text.trim();
-    String password = passwordController.text.trim();
-
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      showSnack("All fields required");
+    if (nameController.text.isEmpty ||
+        emailController.text.isEmpty ||
+        passwordController.text.isEmpty) {
+      showSnack("Fill all fields");
       return;
     }
 
@@ -90,13 +91,13 @@ class _LoginPageState extends State<LoginPage>
     }
 
     try {
-      UserCredential userCredential =
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+      final user = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
 
-      await userCredential.user!.updateDisplayName(name);
+      await user.user!.updateDisplayName(nameController.text);
 
       Navigator.pushReplacement(
         context,
@@ -109,13 +110,13 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   Widget build(BuildContext context) {
-
     final lang = Localizations.localeOf(context).languageCode;
 
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: true,
       
+        // 🔥 FLOATING BUTTON BAR
         bottomNavigationBar: Container(
           height: MediaQuery.of(context).size.height * 0.12,
           decoration: const BoxDecoration(
@@ -124,19 +125,28 @@ class _LoginPageState extends State<LoginPage>
             ),
           ),
           child: Stack(
+            clipBehavior: Clip.none,
             children: [
+      
               Positioned(
                 left: 20,
                 bottom: 20,
                 child: Text(
-                  lang == "bn" ? "পাসওয়ার্ড ভুলে গেছেন?" : "Forgot Password?",
+                  lang == "bn"
+                      ? "পাসওয়ার্ড ভুলে গেছেন?"
+                      : "Forgot Password?",
                   style: const TextStyle(color: Colors.white70),
                 ),
               ),
+      
+              // 🔥 ANIMATED FLOAT BUTTON
               Positioned(
                 right: 20,
-                bottom: 20,
+                top: -30,
                 child: GestureDetector(
+                  onTapDown: (_) => _btnController.forward(),
+                  onTapUp: (_) => _btnController.reverse(),
+                  onTapCancel: () => _btnController.reverse(),
                   onTap: () {
                     if (_tabController.index == 0) {
                       validateAndLogin();
@@ -144,17 +154,28 @@ class _LoginPageState extends State<LoginPage>
                       validateAndSignup();
                     }
                   },
-                  child: Container(
-                    height: 60,
-                    width: 60,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFD4AF7A),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      _tabController.index == 0
-                          ? Icons.login
-                          : Icons.app_registration,
+                  child: ScaleTransition(
+                    scale: _scaleAnim,
+                    child: Container(
+                      height: 70,
+                      width: 70,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD4AF7A),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
+                          )
+                        ],
+                      ),
+                      child: Icon(
+                        _tabController.index == 0
+                            ? Icons.login
+                            : Icons.app_registration,
+                        size: 30,
+                      ),
                     ),
                   ),
                 ),
@@ -165,7 +186,6 @@ class _LoginPageState extends State<LoginPage>
       
         body: SafeArea(
           child: Container(
-            width: double.infinity,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFF2F9E5B), Color(0xFF2E8B57)],
@@ -174,7 +194,7 @@ class _LoginPageState extends State<LoginPage>
             child: Column(
               children: [
       
-                const SizedBox(height: 20),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
       
                 TabBar(
                   controller: _tabController,
@@ -203,165 +223,85 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  // 🔹 LOGIN UI
   Widget _buildLogin(String lang) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+    return _formLayout([
+      const Icon(Icons.person, size: 60, color: Colors.white),
+
+      _textField("Email", emailController),
+      _textField("Password", passwordController, isPassword: true),
+
+      _googleBtn(lang),
+      _fbBtn(lang),
+    ]);
+  }
+
+  Widget _buildSignup(String lang) {
+    return _formLayout([
+      const Icon(Icons.person_add, size: 60, color: Colors.white),
+
+      _textField("Name", nameController),
+      _textField("Email", emailController),
+      _textField("Password", passwordController, isPassword: true),
+
+      _googleBtn(lang),
+      _fbBtn(lang),
+
+      Row(
+        children: [
+          Checkbox(
+            value: isChecked,
+            onChanged: (v) => setState(() => isChecked = v!),
           ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Column(
-              children: [
+          const Text("I agree to Terms",
+              style: TextStyle(color: Colors.white70)),
+        ],
+      ),
+    ]);
+  }
 
-                const SizedBox(height: 30),
-
-                const Icon(Icons.person, size: 60, color: Colors.white),
-
-                const SizedBox(height: 20),
-
-                _textField(lang == "bn" ? "ইমেইল" : "Email", emailController),
-
-                const SizedBox(height: 15),
-
-                _textField(lang == "bn" ? "পাসওয়ার্ড" : "Password",
-                    passwordController,
-                    isPassword: true),
-
-                const SizedBox(height: 20),
-
-                _socialButton(
-                  text: lang == "bn"
-                      ? "গুগল দিয়ে চালান"
-                      : "Continue with Google",
-                  bgColor: Colors.white,
-                  textColor: Colors.black,
-                  icon: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    padding: const EdgeInsets.all(4),
-                    child: const Text(
-                      "G",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.red, // 🔥 google feel
-                      ),
-                    ),
-                  ),
-                ),
-
-
-                _socialButton(
-                  text: lang == "bn"
-                      ? "ফেসবুক দিয়ে চালান"
-                      : "Continue with Facebook",
-                  bgColor: const Color(0xFF1877F2),
-                  textColor: Colors.white,
-                  icon: const Icon(Icons.facebook, color: Colors.white),
-                ),
-
-              ],
-            ),
-          ),
-        );
-      },
+  Widget _formLayout(List<Widget> children) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: Column(
+        children: children
+            .map((e) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: e,
+        ))
+            .toList(),
+      ),
     );
   }
 
-  // 🔹 SIGNUP UI
-  Widget _buildSignup(String lang) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Column(
-              children: [
+  Widget _googleBtn(String lang) {
+    return _socialButton(
+      text: lang == "bn"
+          ? "গুগল দিয়ে চালান"
+          : "Continue with Google",
+      bgColor: Colors.white,
+      textColor: Colors.black,
+      icon: const Text(
+        "G",
+        style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.red,
+            fontSize: 18),
+      ),
+    );
+  }
 
-                const SizedBox(height: 20),
-
-                const Icon(Icons.person_add, size: 60, color: Colors.white),
-
-                const SizedBox(height: 10),
-
-                _textField(lang == "bn" ? "নাম" : "Name", nameController),
-
-                const SizedBox(height: 10),
-
-                _textField(lang == "bn" ? "ইমেইল" : "Email", emailController),
-
-                const SizedBox(height: 10),
-
-                _textField(lang == "bn" ? "পাসওয়ার্ড" : "Password",
-                    passwordController,
-                    isPassword: true),
-
-                const SizedBox(height: 15),
-
-                _socialButton(
-                  text: lang == "bn"
-                      ? "গুগল দিয়ে চালান"
-                      : "Continue with Google",
-                  bgColor: Colors.white,
-                  textColor: Colors.black,
-                  icon: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    padding: const EdgeInsets.all(4),
-                    child: const Text(
-                      "G",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.red, // 🔥 google feel
-                      ),
-                    ),
-                  ),
-                ),
-
-
-                _socialButton(
-                  text: lang == "bn"
-                      ? "ফেসবুক দিয়ে চালান"
-                      : "Continue with Facebook",
-                  bgColor: const Color(0xFF1877F2),
-                  textColor: Colors.white,
-                  icon: const Icon(Icons.facebook, color: Colors.white),
-                ),
-
-                Row(
-                  children: [
-                    Checkbox(
-                      value: isChecked,
-                      onChanged: (v) => setState(() => isChecked = v!),
-                    ),
-                    Text(
-                      lang == "bn"
-                          ? "আমি শর্তাবলীতে সম্মত"
-                          : "I agree to Terms",
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+  Widget _fbBtn(String lang) {
+    return _socialButton(
+      text: lang == "bn"
+          ? "ফেসবুক দিয়ে চালান"
+          : "Continue with Facebook",
+      bgColor: const Color(0xFF1877F2),
+      textColor: Colors.white,
+      icon: const Icon(Icons.facebook, color: Colors.white),
     );
   }
 
@@ -371,50 +311,22 @@ class _LoginPageState extends State<LoginPage>
     required Color textColor,
     required Widget icon,
   }) {
-    return GestureDetector(
-      onTap: () {
-        showSnack("$text clicked", color: Colors.blue);
-      },
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: EdgeInsets.symmetric(
-          vertical: MediaQuery.of(context).size.height * 0.018,
-        ),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            )
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-
-            // 🔥 ICON
-            SizedBox(
-              height: 26,
-              width: 26,
-              child: icon,
-            ),
-
-            const SizedBox(width: 12),
-
-            Text(
-              text,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          icon,
+          const SizedBox(width: 10),
+          Text(text,
               style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.w600,
-                fontSize: MediaQuery.of(context).size.width * 0.042,
-              ),
-            ),
-          ],
-        ),
+                  color: textColor, fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }
