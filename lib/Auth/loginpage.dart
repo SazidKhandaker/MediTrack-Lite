@@ -234,13 +234,38 @@ class _LoginPageState extends State<LoginPage>
 
                 const SizedBox(height: 20),
 
-                _button(lang == "bn"
-                    ? "গুগল দিয়ে চালান"
-                    : "Continue with Google"),
+                _socialButton(
+                  text: lang == "bn"
+                      ? "গুগল দিয়ে চালান"
+                      : "Continue with Google",
+                  bgColor: Colors.white,
+                  textColor: Colors.black,
+                  icon: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: const Text(
+                      "G",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.red, // 🔥 google feel
+                      ),
+                    ),
+                  ),
+                ),
 
-                _button(lang == "bn"
-                    ? "ফেসবুক দিয়ে চালান"
-                    : "Continue with Facebook"),
+
+                _socialButton(
+                  text: lang == "bn"
+                      ? "ফেসবুক দিয়ে চালান"
+                      : "Continue with Facebook",
+                  bgColor: const Color(0xFF1877F2),
+                  textColor: Colors.white,
+                  icon: const Icon(Icons.facebook, color: Colors.white),
+                ),
 
               ],
             ),
@@ -285,13 +310,38 @@ class _LoginPageState extends State<LoginPage>
 
                 const SizedBox(height: 15),
 
-                _button(lang == "bn"
-                    ? "গুগল দিয়ে সাইন আপ"
-                    : "Sign up with Google"),
+                _socialButton(
+                  text: lang == "bn"
+                      ? "গুগল দিয়ে চালান"
+                      : "Continue with Google",
+                  bgColor: Colors.white,
+                  textColor: Colors.black,
+                  icon: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: const Text(
+                      "G",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.red, // 🔥 google feel
+                      ),
+                    ),
+                  ),
+                ),
 
-                _button(lang == "bn"
-                    ? "ফেসবুক দিয়ে সাইন আপ"
-                    : "Sign up with Facebook"),
+
+                _socialButton(
+                  text: lang == "bn"
+                      ? "ফেসবুক দিয়ে চালান"
+                      : "Continue with Facebook",
+                  bgColor: const Color(0xFF1877F2),
+                  textColor: Colors.white,
+                  icon: const Icon(Icons.facebook, color: Colors.white),
+                ),
 
                 Row(
                   children: [
@@ -315,19 +365,55 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  Widget _button(String text) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Center(
-        child: Text(
-          text,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+  Widget _socialButton({
+    required String text,
+    required Color bgColor,
+    required Color textColor,
+    required Widget icon,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        showSnack("$text clicked", color: Colors.blue);
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.symmetric(
+          vertical: MediaQuery.of(context).size.height * 0.018,
+        ),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+
+            // 🔥 ICON
+            SizedBox(
+              height: 26,
+              width: 26,
+              child: icon,
+            ),
+
+            const SizedBox(width: 12),
+
+            Text(
+              text,
+              style: TextStyle(
+                color: textColor,
+                fontWeight: FontWeight.w600,
+                fontSize: MediaQuery.of(context).size.width * 0.042,
+              ),
+            ),
+          ],
         ),
       ),
     );
