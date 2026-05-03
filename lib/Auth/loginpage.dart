@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:meditrack/Auth/forgetpassword.dart' show ForgotPasswordPage;
 import '../homepage.dart' show HomePage;
 
 class LoginPage extends StatefulWidget {
@@ -209,11 +210,21 @@ class _LoginPageState extends State<LoginPage>
               Positioned(
                 left: 20,
                 bottom: 20,
-                child: Text(
-                  lang == "bn"
-                      ? "পাসওয়ার্ড ভুলে গেছেন?"
-                      : "Forgot Password?",
-                  style: const TextStyle(color: Colors.white70),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ForgotPasswordPage(),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    lang == "bn"
+                        ? "পাসওয়ার্ড ভুলে গেছেন?"
+                        : "Forgot Password?",
+                    style: const TextStyle(color: Colors.white70),
+                  ),
                 ),
               ),
 
