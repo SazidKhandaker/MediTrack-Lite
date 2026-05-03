@@ -57,54 +57,108 @@ class _LoginPageState extends State<LoginPage>
   }
 
   Future<void> validateAndLogin() async {
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      showSnack("Fill all fields");
+    final lang = Localizations.localeOf(context).languageCode;
+
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      showSnack(
+        lang == "bn"
+            ? "সব ঘর পূরণ করুন"
+            : "Required fields are empty",
+      );
       return;
     }
 
     try {
+      UserCredential userCredential =
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+        email: email,
+        password: password,
       );
+
+      final user = userCredential.user!;
+
+      await user.reload();
+
+      if (!user.emailVerified) {
+        showSnack(
+          lang == "bn"
+              ? "প্রথমে ইমেইল ভেরিফাই করুন 📩"
+              : "Please verify your email first 📩",
+        );
+
+        await FirebaseAuth.instance.signOut();
+        return;
+      }
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
+
     } catch (e) {
-      showSnack("Login Failed ❌");
+      showSnack(
+        lang == "bn"
+            ? "লগইন ব্যর্থ ❌"
+            : "Login Failed ❌",
+      );
     }
   }
 
   Future<void> validateAndSignup() async {
-    if (nameController.text.isEmpty ||
-        emailController.text.isEmpty ||
-        passwordController.text.isEmpty) {
-      showSnack("Fill all fields");
+    final lang = Localizations.localeOf(context).languageCode;
+
+    String name = nameController.text.trim();
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      showSnack(
+        lang == "bn"
+            ? "সব ঘর পূরণ করুন"
+            : "All fields required",
+      );
       return;
     }
 
     if (!isChecked) {
-      showSnack("Accept terms");
+      showSnack(
+        lang == "bn"
+            ? "শর্তাবলী গ্রহণ করুন"
+            : "Accept terms",
+      );
       return;
     }
 
     try {
-      final user = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+      UserCredential userCredential =
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      await user.user!.updateDisplayName(nameController.text);
+      await userCredential.user!.updateDisplayName(name);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
+      // 🔥 EMAIL VERIFICATION
+      await userCredential.user!.sendEmailVerification();
+
+      showSnack(
+        lang == "bn"
+            ? "ভেরিফিকেশন ইমেইল পাঠানো হয়েছে 📩"
+            : "Verification email sent 📩",
+        color: Colors.green,
       );
+
+      await FirebaseAuth.instance.signOut();
+
     } catch (e) {
-      showSnack("Signup Failed ❌");
+      showSnack(
+        lang == "bn"
+            ? "সাইন আপ ব্যর্থ ❌"
+            : "Signup Failed ❌",
+      );
     }
   }
 
@@ -118,7 +172,7 @@ class _LoginPageState extends State<LoginPage>
       
         // 🔥 FLOATING BUTTON BAR
         bottomNavigationBar: Container(
-          height: MediaQuery.of(context).size.height * 0.12,
+          height: MediaQuery.of(context).size.height * 0.09,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF0F4C5C), Color(0xFF1B6B73)],
