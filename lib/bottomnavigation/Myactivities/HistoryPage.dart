@@ -121,54 +121,79 @@ class HistoryPage extends StatelessWidget {
 
                     /// 📅 DATE
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          lang == "bn"
-                              ? DateHelper.formatBanglaDate(date)
-                              : date,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+
+                        /// 📅 DATE (responsive)
+                        Expanded(
+                          child: Text(
+                            lang == "bn"
+                                ? DateHelper.formatBanglaDate(date)
+                                : date,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: MediaQuery.of(context).size.width * 0.035,
+                            ),
                           ),
                         ),
-                        const Icon(Icons.calendar_month,
-                            color: Colors.white),
+
+                        const SizedBox(width: 8),
+
+                        /// 📅 ICON
+                        const Icon(
+                          Icons.calendar_month,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ],
                     ),
 
                     const SizedBox(height: 14),
 
                     /// 📊 DATA
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    /// 📊 DATA (RESPONSIVE + MULTI LANGUAGE)
+                    Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      runSpacing: 10,
                       children: [
 
-                        _item(
-                          icon: Icons.directions_walk,
-                          value: "${data["steps"]}",
-                          label: lang == 'bn' ? "স্টেপ" : "steps",
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.21,
+                          child: _item(
+                            icon: Icons.directions_walk,
+                            value: "${data["steps"]}",
+                            label: lang == 'bn' ? "স্টেপ" : "Steps",
+
+                          ),
                         ),
 
-                        _item(
-                          icon: Icons.map,
-                          value:
-                          "${(data["distance"] ?? 0).toDouble().toStringAsFixed(2)}",
-                          label: "km",
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.21,
+                          child: _item(
+                            icon: Icons.map,
+                            value: "${(data["distance"] ?? 0).toDouble().toStringAsFixed(2)}",
+                            label: lang == 'bn' ? "কিমি" : "km",
+                          ),
                         ),
 
-                        _item(
-                          icon: Icons.local_fire_department,
-                          value:
-                          "${(data["calories"] ?? 0).toDouble().toStringAsFixed(0)}",
-                          label: "kcal",
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.21,
+                          child: _item(
+                            icon: Icons.local_fire_department,
+                            value: "${(data["calories"] ?? 0).toDouble().toStringAsFixed(0)}",
+                            label: lang == 'bn' ? "ক্যালরি" : "kcal",
+                          ),
                         ),
 
-                        _item(
-                          icon: Icons.timer,
-                          value: formatDuration(data["time"] ?? 0),
-                          label: lang == "bn" ? "সময়" : "time",
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.21,
+                          child: _item(
+                            icon: Icons.timer,
+                            value: formatDuration(data["time"] ?? 0),
+                            label: lang == "bn" ? "সময়" : "Time",
+                          ),
                         ),
                       ],
                     ),
@@ -201,6 +226,8 @@ class HistoryPage extends StatelessWidget {
         ),
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontSize: 10,
             color: Colors.white70,
