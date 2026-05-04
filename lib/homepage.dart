@@ -168,7 +168,18 @@ class _HomePageState extends State<HomePage> {
 
     return taken / docs.length;
   }
-  void navigateTo(int index) {
+  void navigateTo(int index) async {
+
+    // 🔥 HOME হলে শুধু state change
+    if (index == 0) {
+      setState(() {
+        selectedIndex = 0;
+      });
+
+      Navigator.popUntil(context, (route) => route.isFirst);
+      return;
+    }
+
     setState(() {
       selectedIndex = index;
     });
@@ -176,9 +187,6 @@ class _HomePageState extends State<HomePage> {
     Widget page;
 
     switch (index) {
-      case 0:
-        page = const HomePage();
-        break;
       case 1:
         page = const MyActivitiesPage();
         break;
@@ -195,10 +203,15 @@ class _HomePageState extends State<HomePage> {
         return;
     }
 
-    Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => page),
     );
+
+    // 🔥 BACK করলে hover reset
+    setState(() {
+      selectedIndex = 0;
+    });
   }
   int centerIndex = 50;
   Widget navItem(IconData icon, int index) {
@@ -207,7 +220,8 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () => navigateTo(index),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutBack,
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: isSelected ? Colors.green.withOpacity(0.15) : Colors.transparent,
