@@ -39,6 +39,8 @@ class MedicineDetailPage extends StatelessWidget {
                   ),
 
                   Text(name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontWeight: FontWeight.bold)),
 
                   const Icon(Icons.more_vert),
@@ -50,7 +52,7 @@ class MedicineDetailPage extends StatelessWidget {
               // 💊 IMAGE
               Center(
                 child: CircleAvatar(
-                  radius: 70,
+                  radius: MediaQuery.of(context).size.width * 0.18,
                   backgroundColor: Colors.orange.shade100,
                   child: Image.asset("assets/images/medicine.png"),
                 ),
@@ -129,7 +131,9 @@ class MedicineDetailPage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              Row(
+              Wrap(
+                spacing: 10,
+                runSpacing: 6,
                 children: [
                   _tag(AppText.meal(lang, map['meal']), Colors.orange),
                   const SizedBox(width: 10),
@@ -210,7 +214,7 @@ class MedicineDetailPage extends StatelessWidget {
           
             child: Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
+                bottom: MediaQuery.of(context).viewInsets.bottom+10,
                 left: 20,
                 right: 20,
                 top: 15,
@@ -236,6 +240,7 @@ class MedicineDetailPage extends StatelessWidget {
                     // 🔥 TITLE
                     Text(
                       AppText.editSchedule(lang),
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -458,8 +463,11 @@ class MedicineDetailPage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(title, style: const TextStyle(color: Colors.grey)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(title, maxLines: 1,
+              overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.grey)),
+          Text(value, maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
