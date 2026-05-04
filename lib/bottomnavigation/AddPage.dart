@@ -40,7 +40,7 @@ class _AddPageState extends State<AddPage> {
             Text(
               AppText.addMedicineDetails(lang),
               style: TextStyle(
-                fontSize: 18,
+                fontSize: MediaQuery.of(context).size.width * 0.045,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -96,9 +96,12 @@ class _AddPageState extends State<AddPage> {
               child: ListTile(
                 leading: const Icon(Icons.access_time),
                 title: Text(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   selectedTime == null
                       ? AppText.selectTime(lang)
                       : selectedTime!.format(context),
+
                 ),
                 onTap: () async {
                   TimeOfDay? picked = await showTimePicker(
@@ -123,6 +126,8 @@ class _AddPageState extends State<AddPage> {
                 leading: const Icon(Icons.calendar_today),
                 title: Text(
                   selectedDate ?? AppText.selectDate(lang),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 onTap: () async {
                   DateTime? picked = await showDatePicker(
@@ -178,6 +183,8 @@ class _AddPageState extends State<AddPage> {
                 ),
                 child:  Text(
                   "${AppText.saveMedicine(lang)}",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 16),
                 ),
 
@@ -191,7 +198,7 @@ class _AddPageState extends State<AddPage> {
 
   Widget _card({required Widget child}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding:  EdgeInsets.symmetric(horizontal:  MediaQuery.of(context).size.width * 0.03,),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
