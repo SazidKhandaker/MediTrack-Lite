@@ -109,8 +109,8 @@ class _ListPageState extends State<ListPage> {
 
                 // 🔥 LOGO
                 Container(
-                  height: 140,
-                  width: 140,
+                  height: MediaQuery.of(context).size.width * 0.3,
+                  width: MediaQuery.of(context).size.width * 0.3,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                      color: Theme.of(context).cardColor,
@@ -137,8 +137,9 @@ class _ListPageState extends State<ListPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("${(takenPercent * 100).toInt()}%"),
-                          Text("${(missedPercent * 100).toInt()}%"),
+                          Text(
+                            "${(takenPercent * 100).toInt()}%",style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.035 ),),
+                          Text("${(missedPercent * 100).toInt()}%",style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.035 ),),
                         ],
                       ),
 
@@ -231,9 +232,14 @@ class _ListPageState extends State<ListPage> {
                                 CrossAxisAlignment.start,
                                 children: [
 
-                                  Text(map['name'] ?? ""),
+                                  Text(map['name'] ?? "",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
 
-                                  Text(
+
+                                  Text(maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     lang == "bn"
                                         ? DateHelper.formatBanglaDate(map['date'] ?? "")
                                         : map['date'] ?? "",
@@ -244,25 +250,32 @@ class _ListPageState extends State<ListPage> {
                               ),
                             ),
 
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: isTaken
-                                    ? Colors.green.shade100
-                                    : Colors.red.shade100,
-                                borderRadius:
-                                BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                isTaken
-                                    ? AppText.taken(lang)
-                                    : AppText.missed(lang),
-                                style: TextStyle(
-                                  color: isTaken
-                                      ? Colors.green
-                                      : Colors.red,
-                                  fontWeight: FontWeight.bold,
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: IntrinsicWidth(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4,
+                                      )
+                                    ],
+                                    color: isTaken
+                                        ? Colors.green.shade100
+                                        : Colors.red.shade100,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    isTaken
+                                        ? AppText.taken(lang)
+                                        : AppText.missed(lang),
+                                    style: TextStyle(
+                                      color: isTaken ? Colors.green : Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ),
                             )
