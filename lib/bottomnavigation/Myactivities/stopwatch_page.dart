@@ -456,7 +456,11 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "$steps steps",
+                                    lang == "bn"
+                                        ? "$steps স্টেপ"
+                                        : "$steps steps",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -464,7 +468,9 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    "${distance.toStringAsFixed(2)} km • ${calories.toStringAsFixed(0)} kcal",
+                                    lang == "bn"
+                                        ? "${distance.toStringAsFixed(2)} কিমি • ${calories.toStringAsFixed(0)} ক্যালরি"
+                                        : "${distance.toStringAsFixed(2)} km • ${calories.toStringAsFixed(0)} kcal",
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: isDark ? Colors.white70 : Colors.black54,
@@ -582,9 +588,9 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              _modeButton("Running", ActivityType.running),
-                              _modeButton("Walking", ActivityType.walking),
-                              _modeButton("Cycling", ActivityType.cycling),
+                              _modeButton(lang == "bn" ? "দৌড়" : "Running", ActivityType.running),
+                              _modeButton(lang == "bn" ? "হাঁটা" : "Walking", ActivityType.walking),
+                              _modeButton(lang == "bn" ? "সাইকেল" : "Cycling", ActivityType.cycling),
                             ],
                           ),
 
@@ -604,7 +610,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white),
                                   ),
-                                  const Text("Elapsed time",
+                                  Text(lang == "bn" ? "অতিবাহিত সময়" : "Elapsed time",
                                       style: TextStyle(color: Colors.white70)),
                                 ],
                               ),
@@ -644,7 +650,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                     "${distance.toStringAsFixed(2)} km",
                                     style: const TextStyle(color: Colors.white),
                                   ),
-                                  const Text("Distance",
+                                   Text( lang == "bn" ? "দূরত্ব" : "Distance",
                                       style: TextStyle(color: Colors.white70)),
                                 ],
                               ),
@@ -698,7 +704,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                           ),
                                         ),
 
-                                        const Text("steps", style: TextStyle(color: Colors.blue)),
+                                         Text(lang == "bn" ? "স্টেপ" : "steps", style: TextStyle(color: Colors.blue)),
 
                                         const SizedBox(height: 8),
 
@@ -714,8 +720,8 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                         const SizedBox(height: 6),
 
                                         /// 🔥 PERCENT
-                                        Text(
-                                          "${(progress * 100).toStringAsFixed(0)}% completed",
+                                        Text(lang == "bn" ? "${(progress * 100).toStringAsFixed(0)}% সম্পন্ন":"${(progress * 100).toStringAsFixed(0)}% completed"
+                                            ,
                                           style: const TextStyle(color: Colors.white70, fontSize: 12),
                                         ),
                                       ],
@@ -854,7 +860,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
               children: [
 
                 /// 🔥 TITLE
-                const Text(
+                 Text(
                   "🎯 Set Your Daily Target",
                   style: TextStyle(
                     color: Colors.white,
