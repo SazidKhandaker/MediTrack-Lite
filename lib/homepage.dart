@@ -95,6 +95,7 @@ class _HomePageState extends State<HomePage> {
             .get();
 
         if (isOn) {
+          await NotificationService.cancelAll();
           await scheduleAllFromDB();
         }
       }});
@@ -166,7 +167,7 @@ class _HomePageState extends State<HomePage> {
       // 🔻 Bottom nav SAME
       bottomNavigationBar: SafeArea(
         child: Container(
-          height: 80,
+          height:  MediaQuery.of(context).size.height * 0.09,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius:
@@ -297,7 +298,11 @@ class _HomePageState extends State<HomePage> {
     // 🔥 LOOP + schedule
     if (isNotificationOn) {
 
-      await scheduleAllFromDB(); // 🔥 clean
+      // 🔥 ADD THIS LINE (VERY IMPORTANT)
+      await NotificationService.cancelAll();
+
+      // 🔥 THEN schedule
+      await scheduleAllFromDB();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Reminder ON 🔔")),
@@ -456,7 +461,15 @@ class _HomePageState extends State<HomePage> {
                           "${selectedDate.year}-${selectedDate.month}-${selectedDate.day}";
                       return doc['date'] == formatted || doc['date'] == altFormat;
                     }).toList();
+                    filtered.sort((a, b) {
+                      final timeA = parseTime(a['time']);
+                      final timeB = parseTime(b['time']);
 
+                      final minutesA = timeA['hour']! * 60 + timeA['minute']!;
+                      final minutesB = timeB['hour']! * 60 + timeB['minute']!;
+
+                      return minutesA.compareTo(minutesB);
+                    });
                     return Column(
                       children: [
 
