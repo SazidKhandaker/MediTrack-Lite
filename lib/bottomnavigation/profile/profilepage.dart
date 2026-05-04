@@ -82,7 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       }
                     },
                     child: CircleAvatar(
-                      radius: 35,
+                      radius: MediaQuery.of(context).size.width * 0.09,
                       backgroundImage: user?.photoURL != null
                           ? NetworkImage(user!.photoURL!)
                           : null,
@@ -106,12 +106,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
                             return Text(
                               user?.displayName ?? "User Name",
-                              style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.black),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style:  TextStyle(fontSize: MediaQuery.of(context).size.width * 0.045,fontWeight: FontWeight.bold,color: Colors.black),
                             );
                           },
                         ),
                         Text(
                           user?.email ?? "",
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+
+
                           style: const TextStyle(color: Colors.grey),
                         ),
                         const SizedBox(height: 5),
@@ -194,7 +200,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 trailing: DropdownButtonHideUnderline(
                   child: Container(
-                    width: 120,
+                    width: MediaQuery.of(context).size.width * 0.3,
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade400),

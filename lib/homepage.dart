@@ -553,198 +553,219 @@ class _HomePageState extends State<HomePage> {
                                 bool isTaken = map['status'] == true;
 
 
-                                return Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 10),
-                                  padding: const EdgeInsets.all(16),
+                                return  Container(
+                                margin: const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.all(16),
 
-                                  decoration: BoxDecoration(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? const Color(0xFF1E293B)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
                                     color: Theme.of(context).brightness == Brightness.dark
-                                        ? const Color(0xFF1E293B) // 🔥 dark card color
-                                        : Colors.white,
-
-                                    borderRadius: BorderRadius.circular(18),
-
-                                    // 🔥 THICK BORDER
-                                    border: Border.all(
-                                      color: Theme.of(context).brightness == Brightness.dark
-                                          ? Colors.greenAccent // dark mode border
-                                          : Colors.green,      // light mode border
-                                      width: 2.2,
-                                    ),
-
-                                    // 🔥 SHADOW
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.08),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
+                                        ? Colors.greenAccent
+                                        : Colors.green,
+                                    width: 2.2,
                                   ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
 
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children:[
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
 
+                                    // 🔹 LEFT SIDE
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
 
-                                      Column(
-
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-
-                                        Text(data['name'],
-                                            style: const TextStyle(
-                                                fontWeight:
-                                                FontWeight.bold)),
-
-                                        Text(AppText.meal(lang, data['meal'])),
-
-                                        Text("${AppText.nextDose(lang)} ${data['time']}",
-                                            style: const TextStyle(
-                                                color: Colors.orange)),
-
-                                        const SizedBox(height: 10),
-
-                                        Row(
-
-
-                                          children: [
-
-                                            ElevatedButton(
-                                            onPressed: () async {
-
-                                                                    bool? confirm = await showDialog(
-                                                                    context: context,
-                                                                    builder: (context) => AlertDialog(
-                                                                    backgroundColor: Colors.green[200],
-                                                                    title: const Text("Confirm"),
-                                                                    content: const Text("Are you sure you took this medicine?"),
-                                                                    actions: [
-                                                                    TextButton(
-                                                                    onPressed: () => Navigator.pop(context, false),
-                                                                    child: const Text("No"),
-                                                                    ),
-                                                                    ElevatedButton(
-                                                                    onPressed: () => Navigator.pop(context, true),
-                                                                    child: const Text("Yes"),
-                                                                    ),
-                                                                    ],
-                                                                    ),
-                                                                    );
-
-                                                                    if (confirm == true) {
-
-                                                                    final user = FirebaseAuth.instance.currentUser;
-
-                                                                    await FirebaseFirestore.instance
-                                                                              .collection('users')
-                                                                              .doc(user!.uid)
-                                                                              .collection('medicines')
-                                                                              .doc(filtered[index].id)
-                                                                              .update({
-                                                                    "status": true,
-                                                                    });
-
-                                                                    // ❌ no setState needed
-                                                                    }
-                                                                    },
-                                              child: Text(AppText.taken(lang)),
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.green),
+                                          // 🧾 Medicine name
+                                          Text(
+                                            data['name'],
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: MediaQuery.of(context).size.width * 0.04,
                                             ),
-
-                                             SizedBox(width: 5),
-
-                                            ElevatedButton(
-                                              onPressed: () async {
-
-                                                bool? confirm = await showDialog(
-                                                  context: context,
-                                                  builder: (context) => AlertDialog(
-                                                    backgroundColor: Colors.red[200],
-                                                    title: const Text("Confirm"),
-                                                    content: const Text("Mark as missed?"),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () => Navigator.pop(context, false),
-                                                        child: const Text("No"),
-                                                      ),
-                                                      ElevatedButton(
-                                                        onPressed: () => Navigator.pop(context, true),
-                                                        child: const Text("Yes"),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-
-                                                if (confirm == true) {
-
-                                                  final user = FirebaseAuth.instance.currentUser;
-
-                                                  await FirebaseFirestore.instance
-                                                      .collection('users')
-                                                      .doc(user!.uid)
-                                                      .collection('medicines')
-                                                      .doc(filtered[index].id)
-                                                      .update({
-                                                    "status": false,
-                                                  });
-                                                }
-                                              },
-                                              child: Text(AppText.missed(lang)),
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red),
-                                            ),
-
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 6),
-
-                                        Text(
-                                          isTaken
-                                              ? "✔ Taken"
-                                              : "❌ Not taken",
-                                          style: TextStyle(
-                                            color: isTaken
-                                                ? Colors.green
-                                                : Colors.red,
                                           ),
-                                        )
-                                      ],
-                                    ),
 
-                                      GestureDetector(
-                                        onTap: (){
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => MedicineDetailPage(data: data,),
+                                          const SizedBox(height: 4),
+
+                                          // 🍽 Meal
+                                          Text(
+                                            AppText.meal(lang, data['meal']),
+                                            style: TextStyle(
+                                              fontSize: MediaQuery.of(context).size.width * 0.035,
                                             ),
-                                          );
+                                          ),
 
-                                        },
+                                          // ⏰ Time
+                                          Text(
+                                            "${AppText.nextDose(lang)} ${data['time']}",
+                                            style: TextStyle(
+                                              color: Colors.orange,
+                                              fontSize: MediaQuery.of(context).size.width * 0.035,
+                                            ),
+                                          ),
 
+                                          const SizedBox(height: 10),
 
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: const Icon(
-                                        Icons.edit,
-                                        color: Colors.green,
+                                          // 🔥 BUTTONS
+                                          Wrap(
+                                            spacing: 6,
+                                            runSpacing: 6,
+                                            children: [
+
+                                              // ✅ TAKEN
+                                              ElevatedButton(
+                                                onPressed: () async {
+
+                                                  bool? confirm = await showDialog(
+                                                    context: context,
+                                                    builder: (context) => AlertDialog(
+                                                      backgroundColor: Colors.green[200],
+                                                      title: Text(AppText.sureness(lang)),
+                                                      content: Text(
+                                                        lang == "bn"
+                                                            ? "আপনি কি এই ওষুধটি নিয়েছেন?"
+                                                            : "Are you sure you took this medicine?",
+                                                      ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () => Navigator.pop(context, false),
+                                                          child: Text(AppText.cancel(lang)),
+                                                        ),
+                                                        ElevatedButton(
+                                                          onPressed: () => Navigator.pop(context, true),
+                                                          child: Text(lang == "bn" ? "হ্যাঁ" : "Yes"),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+
+                                                  if (confirm == true) {
+                                                    final user = FirebaseAuth.instance.currentUser;
+
+                                                    await FirebaseFirestore.instance
+                                                        .collection('users')
+                                                        .doc(user!.uid)
+                                                        .collection('medicines')
+                                                        .doc(filtered[index].id)
+                                                        .update({
+                                                      "status": true,
+                                                    });
+                                                  }
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.green,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                                ),
+                                                child: Text(
+                                                  AppText.taken(lang),
+                                                  style: const TextStyle(fontSize: 12),
+                                                ),
+                                              ),
+
+                                              // ❌ MISSED
+                                              ElevatedButton(
+                                                onPressed: () async {
+
+                                                  bool? confirm = await showDialog(
+                                                    context: context,
+                                                    builder: (context) => AlertDialog(
+                                                      backgroundColor: Colors.red[200],
+                                                      title: Text(AppText.sureness(lang)),
+                                                      content: Text(
+                                                        lang == "bn"
+                                                            ? "এটি মিসড হিসেবে মার্ক করবেন?"
+                                                            : "Mark as missed?",
+                                                      ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () => Navigator.pop(context, false),
+                                                          child: Text(AppText.cancel(lang)),
+                                                        ),
+                                                        ElevatedButton(
+                                                          onPressed: () => Navigator.pop(context, true),
+                                                          child: Text(lang == "bn" ? "হ্যাঁ" : "Yes"),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+
+                                                  if (confirm == true) {
+                                                    final user = FirebaseAuth.instance.currentUser;
+
+                                                    await FirebaseFirestore.instance
+                                                        .collection('users')
+                                                        .doc(user!.uid)
+                                                        .collection('medicines')
+                                                        .doc(filtered[index].id)
+                                                        .update({
+                                                      "status": false,
+                                                    });
+                                                  }
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                                ),
+                                                child: Text(
+                                                  AppText.missed(lang),
+                                                  style: const TextStyle(fontSize: 12),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 6),
+
+                                          // 🔥 STATUS
+                                          Text(
+                                            isTaken
+                                                ? "✔ ${AppText.takenStatus(lang)}"
+                                                : "❌ ${AppText.notTakenStatus(lang)}",
+                                            style: TextStyle(
+                                              color: isTaken ? Colors.green : Colors.red,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
 
+                                    const SizedBox(width: 10),
 
-                                    ],
-                                  ),
-
-
+                                    // ✏️ EDIT BUTTON
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => MedicineDetailPage(data: data),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: const Icon(Icons.edit, color: Colors.green),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 );
                               },
                             ),
