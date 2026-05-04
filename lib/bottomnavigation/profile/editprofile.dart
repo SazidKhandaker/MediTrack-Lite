@@ -83,7 +83,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 }
               },
               child: CircleAvatar(
-                radius: 45,
+                radius: MediaQuery.of(context).size.width * 0.12,
                 backgroundImage: user?.photoURL != null
                     ? NetworkImage(user!.photoURL!)
                     : null,
@@ -106,7 +106,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
             // 🔥 CARD
             Container(
-              padding: const EdgeInsets.all(16),
+              padding:  EdgeInsets.all(  MediaQuery.of(context).size.width * 0.04,),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(20),
@@ -189,6 +189,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ? TextField(
                     controller: aboutController,
                     maxLines: 3,
+                    minLines: 2,
                     decoration: const InputDecoration(
                       hintText: "Write about yourself...",
                     ),
@@ -206,7 +207,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     ),
                     child: Text(
                       aboutController.text.isEmpty
-                          ? "No bio added"
+                          ? lang == "bn" ? "কোনো তথ্য যোগ করা হয়নি" : "No bio added"
                           : aboutController.text,
                     ),
                   ),
