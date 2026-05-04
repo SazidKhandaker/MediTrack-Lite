@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meditrack/utils/app_text.dart';
@@ -35,6 +36,8 @@ class HistoryPage extends StatelessWidget {
 
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
+            .collection("users")
+            .doc(FirebaseAuth.instance.currentUser!.uid)
             .collection("activity")
             .orderBy("date", descending: true)
             .snapshots(),

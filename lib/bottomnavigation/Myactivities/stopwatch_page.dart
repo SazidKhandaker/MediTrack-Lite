@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:meditrack/bottomnavigation/Myactivities/HistoryPage.dart' show HistoryPage;
@@ -24,9 +25,15 @@ ActivityType selectedActivity = ActivityType.running;
 class _SmartActivityPageState extends State<SmartActivityPage> {
 
   Future<void> saveActivity() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
     String today = DateTime.now().toString().substring(0, 10);
 
     await FirebaseFirestore.instance
+        .collection("users")
+        .doc(user.uid) // 🔥 user specific
         .collection("activity")
         .add({
       "steps": steps,
