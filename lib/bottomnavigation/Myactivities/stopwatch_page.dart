@@ -18,7 +18,7 @@ class SmartActivityPage extends StatefulWidget {
   @override
   State<SmartActivityPage> createState() => _SmartActivityPageState();
 }
-enum ActivityType { running, walking, cycling }
+enum ActivityType { running, walking, jogging }
 
 ActivityType selectedActivity = ActivityType.running;
 
@@ -94,11 +94,21 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
 
         steps = event.steps - initialSteps;
 
-        /// distance (avg 0.75m per step)
-        distance = steps * 0.00075;
+        /// 🔥 Activity based calculation
+        if (selectedActivity == ActivityType.running) {
+          distance = steps * 0.001;   // 🏃 running (long stride)
+          calories = steps * 0.06;
 
-        /// calories
-        calories = steps * 0.04;
+        } else if (selectedActivity == ActivityType.jogging) {
+          distance = steps * 0.0009;  // 🚶‍♂️ jogging (medium)
+          calories = steps * 0.05;
+
+        } else {
+          distance = steps * 0.00075; // 🚶 walking (slow)
+          calories = steps * 0.04;
+        }
+
+        /// 🔥 progress
         progress = steps / targetSteps;
         if (progress > 1) progress = 1;
       });
@@ -590,7 +600,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                             children: [
                               _modeButton(lang == "bn" ? "দৌড়" : "Running", ActivityType.running),
                               _modeButton(lang == "bn" ? "হাঁটা" : "Walking", ActivityType.walking),
-                              _modeButton(lang == "bn" ? "সাইকেল" : "Cycling", ActivityType.cycling),
+                              _modeButton(lang == "bn" ? "জগিং" : "Jogging", ActivityType.jogging),
                             ],
                           ),
 
@@ -623,7 +633,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                         ? Icons.directions_run
                                         : selectedActivity == ActivityType.walking
                                         ? Icons.directions_walk
-                                        : Icons.directions_bike,
+                                        :  Icons.directions_run,
                                     color: Colors.orange,
                                     size: 28,
                                   ),
@@ -635,7 +645,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                                         ? (lang == "bn" ? "দৌড় চালিয়ে যান 🔥" : "Keep running! 🔥")
                                         : selectedActivity == ActivityType.walking
                                         ? (lang == "bn" ? "ভালো হাঁটছেন 👣" : "Nice walk 👣")
-                                        : (lang == "bn" ? "চালিয়ে যান 🚴" : "Keep cycling 🚴"),
+                                        : (lang == "bn" ? "জগিং চালিয়ে যান 🏃" : "Keep jogging 🏃"),
                                     style: const TextStyle(color: Colors.white70),
                                   ),
                                 ],
@@ -794,7 +804,7 @@ class _SmartActivityPageState extends State<SmartActivityPage> {
                   ? Icons.directions_run
                   : type == ActivityType.walking
                   ? Icons.directions_walk
-                  : Icons.directions_bike,
+                  : Icons.directions_walk ,
               color: Colors.white,
               size: 16,
             ),
