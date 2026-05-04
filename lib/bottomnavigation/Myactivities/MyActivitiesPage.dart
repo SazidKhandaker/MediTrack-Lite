@@ -275,10 +275,10 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
 
           const SizedBox(height: 15),
 
-          Image.asset(state.image, height: 140),
+          Image.asset(state.image, height:  MediaQuery.of(context).size.width * 0.35),
           const SizedBox(height: 10),
           CircularPercentIndicator(
-            radius: 60,
+            radius: MediaQuery.of(context).size.width * 0.15,
             lineWidth: 12,
             percent: progress,
             center: Text(
