@@ -90,6 +90,13 @@ class _LoginPageState extends State<LoginPage>
             : "Google login successful ✅",
         color: Colors.green,
       );
+      await Future.delayed(const Duration(seconds: 1));
+
+// 🔥 go to home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
 
     } catch (e) {
       print("GOOGLE ERROR: $e");
