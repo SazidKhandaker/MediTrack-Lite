@@ -21,6 +21,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int selectedIndex = 0;
   bool isNotificationOn = false;
   Map<String, int> parseTime(String time) {
 
@@ -70,7 +71,50 @@ class _HomePageState extends State<HomePage> {
       isNotificationOn = prefs.getBool('notification') ?? false;
     });
   }
+  Widget profileNavItem(int index) {
+    bool isSelected = selectedIndex == index;
 
+    return GestureDetector(
+      onTap: () => navigateTo(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Colors.green.withOpacity(0.15)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 300),
+          scale: isSelected ? 1.2 : 1,
+          child: StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.userChanges(),
+            builder: (context, snapshot) {
+              final user = snapshot.data;
+
+              return CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.grey.shade300,
+                backgroundImage: user?.photoURL != null
+                    ? NetworkImage(
+                  user!.photoURL! +
+                      "?t=${DateTime.now().millisecondsSinceEpoch}",
+                )
+                    : null,
+                child: user?.photoURL == null
+                    ? Icon(
+                  Icons.person,
+                  color: isSelected ? Colors.green : Colors.grey,
+                )
+                    : null,
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
   Future<void> saveNotificationState(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notification', value);
@@ -125,6 +169,10 @@ class _HomePageState extends State<HomePage> {
     return taken / docs.length;
   }
   void navigateTo(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+
     Widget page;
 
     switch (index) {
@@ -132,7 +180,7 @@ class _HomePageState extends State<HomePage> {
         page = const HomePage();
         break;
       case 1:
-        page = const MyActivitiesPage ();
+        page = const MyActivitiesPage();
         break;
       case 2:
         page = const AddPage();
@@ -153,7 +201,29 @@ class _HomePageState extends State<HomePage> {
     );
   }
   int centerIndex = 50;
+  Widget navItem(IconData icon, int index) {
+    bool isSelected = selectedIndex == index;
 
+    return GestureDetector(
+      onTap: () => navigateTo(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.green.withOpacity(0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 300),
+          scale: isSelected ? 1.2 : 1,
+          child: Icon(
+            icon,
+            color: isSelected ? Colors.green : Colors.grey,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,17 +247,14 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-        
-              GestureDetector(
-                onTap: () => navigateTo(0),
-                child: const Icon(Icons.grid_view, color: Colors.blue),
-              ),
-        
-              GestureDetector(
-                onTap: () => navigateTo(1),
-                child: const Icon(Icons.local_activity, color: Colors.grey),
-              ),
-        
+
+              // 🟢 Home
+              navItem(Icons.grid_view, 0),
+
+              // 🟢 Activity
+              navItem(Icons.local_activity, 1),
+
+              // 🟢 Center Add Button (same থাকবে)
               GestureDetector(
                 onTap: () => navigateTo(2),
                 child: Container(
@@ -202,41 +269,12 @@ class _HomePageState extends State<HomePage> {
                   child: const Icon(Icons.add, color: Colors.white),
                 ),
               ),
-        
-              GestureDetector(
-                onTap: () => navigateTo(3),
-                child: const Icon(Icons.list_alt, color: Colors.grey),
-              ),
-        
-              // 🔥 PROFILE CLICK FIXED
-              GestureDetector(
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfilePage()),
-                  );
-                  setState(() {});
-                },
-                child: StreamBuilder<User?>(
-                  stream: FirebaseAuth.instance.userChanges(),
-                  builder: (context, snapshot) {
-        
-                    final user = snapshot.data;
-        
-                    return CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.grey.shade300,
-                      backgroundImage: user?.photoURL != null
-                          ? NetworkImage(user!.photoURL! +
-                          "?t=${DateTime.now().millisecondsSinceEpoch}")
-                          : null,
-                      child: user?.photoURL == null
-                          ? const Icon(Icons.person, color: Colors.grey)
-                          : null,
-                    );
-                  },
-                ),
-              ),
+
+              // 🟢 List
+              navItem(Icons.list_alt, 3),
+
+              // 🔥 Profile (image + animation)
+              profileNavItem(4),
             ],
           ),
         ),
