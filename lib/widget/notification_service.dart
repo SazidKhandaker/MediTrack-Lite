@@ -53,12 +53,18 @@ class NotificationService {
     required int hour,
     required int minute,
     required int beforeMin,
-    required String date, // 🔥 NEW
+    required String date,
   }) async {
 
-    final selectedDate = DateTime.parse(date);
+    DateTime selectedDate;
+    try {
+      selectedDate = DateTime.parse(date);
+    } catch (e) {
+      print("❌ Invalid date: $date");
+      return;
+    }
 
-    final scheduledTime = tz.TZDateTime(
+    var scheduledTime = tz.TZDateTime(
       tz.local,
       selectedDate.year,
       selectedDate.month,
@@ -67,19 +73,33 @@ class NotificationService {
       minute,
     );
 
+
+
+
+    while (scheduledTime.isBefore(tz.TZDateTime.now(tz.local))) {
+      scheduledTime = scheduledTime.add(const Duration(days: 1));
+    }
+
+// ✅ only ONCE
     final reminderTime =
     scheduledTime.subtract(Duration(minutes: beforeMin));
 
+// 🔥 IMPORTANT: shift এর পরে calculate
     print("NOW: ${DateTime.now()}");
     print("SCHEDULED: $scheduledTime");
     print("REMINDER: $reminderTime");
 
-    // ❌ past হলে schedule করবে না
-    if (reminderTime.isBefore(tz.TZDateTime.now(tz.local))) return;
 
-    /// 🔥 MAIN SCHEDULE
+// 🔥 FINAL SAFETY CHECK
+    if (reminderTime.isBefore(tz.TZDateTime.now(tz.local))) {
+      print("⛔ Still past after fix");
+      return;
+    }
+
+    final id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
     await _notification.zonedSchedule(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      id,
       "💊 Medicine Time",
       "⏰ $name নেওয়ার সময় হয়েছে",
       reminderTime,
@@ -98,13 +118,13 @@ class NotificationService {
       UILocalNotificationDateInterpretation.absoluteTime,
     );
 
-    /// 🔥 FALLBACK (optional রাখতে পারো)
+    // 🔥 fallback
     final diff = reminderTime.difference(DateTime.now());
 
     if (diff.inSeconds > 0) {
       Future.delayed(diff, () async {
         await _notification.show(
-          999,
+          id + 1,
           "💊 Medicine Reminder",
           "⏰ $name নেওয়ার সময় হয়েছে",
           const NotificationDetails(
