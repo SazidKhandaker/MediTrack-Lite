@@ -62,6 +62,7 @@ class _HomePageState extends State<HomePage> {
         hour: time['hour']!,
         minute: time['minute']!,
         beforeMin: 1,
+          date: data['date']
       );
     }
   }

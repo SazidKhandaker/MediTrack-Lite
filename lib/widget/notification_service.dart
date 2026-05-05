@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseFirestore;
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
+
   static final FlutterLocalNotificationsPlugin _notification =
   FlutterLocalNotificationsPlugin();
 
@@ -50,8 +53,20 @@ class NotificationService {
     required int hour,
     required int minute,
     required int beforeMin,
+    required String date, // 🔥 NEW
   }) async {
-    final scheduledTime = _nextInstance(hour, minute);
+
+    final selectedDate = DateTime.parse(date);
+
+    final scheduledTime = tz.TZDateTime(
+      tz.local,
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      hour,
+      minute,
+    );
+
     final reminderTime =
     scheduledTime.subtract(Duration(minutes: beforeMin));
 
@@ -59,7 +74,10 @@ class NotificationService {
     print("SCHEDULED: $scheduledTime");
     print("REMINDER: $reminderTime");
 
-    /// 🔥 1. TRY NORMAL SCHEDULE
+    // ❌ past হলে schedule করবে না
+    if (reminderTime.isBefore(tz.TZDateTime.now(tz.local))) return;
+
+    /// 🔥 MAIN SCHEDULE
     await _notification.zonedSchedule(
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
       "💊 Medicine Time",
@@ -75,12 +93,12 @@ class NotificationService {
           enableVibration: true,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
       UILocalNotificationDateInterpretation.absoluteTime,
     );
 
-    /// 🔥 2. FALLBACK (IMPORTANT FIX)
+    /// 🔥 FALLBACK (optional রাখতে পারো)
     final diff = reminderTime.difference(DateTime.now());
 
     if (diff.inSeconds > 0) {
@@ -95,8 +113,6 @@ class NotificationService {
               "Medicine Reminder",
               importance: Importance.max,
               priority: Priority.high,
-              playSound: true,
-              enableVibration: true,
             ),
           ),
         );
@@ -127,5 +143,44 @@ class NotificationService {
   /// 🔥 CANCEL ALL
   static Future<void> cancelAll() async {
     await _notification.cancelAll();
+  }
+  static Future<void> scheduleAllFromDB() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('medicines')
+        .get();
+
+    int id = 0;
+
+    for (var doc in snapshot.docs) {
+      final data = doc.data();
+
+      final time = _parseTime(data['time']);
+
+      await NotificationService.scheduleMedicine(
+        name: data['name'],
+        hour: time['hour']!,
+        minute: time['minute']!,
+        beforeMin: 0, // 🔥 or 5 (5 min before)
+          date: data['date']
+      );
+    }
+  }
+  static Map<String, int> _parseTime(String time) {
+    final parts = time.split(":");
+
+    int hour = int.parse(parts[0]);
+    int minute = int.parse(parts[1].split(" ")[0]);
+
+    if (time.contains("PM") && hour != 12) hour += 12;
+    if (time.contains("AM") && hour == 12) hour = 0;
+
+    return {
+      "hour": hour,
+      "minute": minute,
+    };
   }
 }

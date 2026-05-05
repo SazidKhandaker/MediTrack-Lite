@@ -154,6 +154,7 @@ class _AddPageState extends State<AddPage> {
               child: ElevatedButton(
                 onPressed: () async {
 
+
                   final user = FirebaseAuth.instance.currentUser;
 
                   await FirebaseFirestore.instance
@@ -163,10 +164,19 @@ class _AddPageState extends State<AddPage> {
                       .add({
                     "name": nameController.text,
                     "meal": selectedMeal,
-                    "time": selectedTime!.format(context), // "3:35 PM"
+                    "time": selectedTime!.format(context),
                     "date": selectedDate,
                     "createdAt": Timestamp.now(),
                   });
+
+                  // 🔥 ADD THIS BLOCK
+                  final prefs = await SharedPreferences.getInstance();
+                  bool isOn = prefs.getBool('notification') ?? false;
+
+                  if (isOn) {
+                    await NotificationService.cancelAll();
+                    await NotificationService.scheduleAllFromDB(); // 🔥 or call your function
+                  }
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Medicine Saved")),
