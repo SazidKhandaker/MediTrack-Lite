@@ -153,7 +153,7 @@ class _AddPageState extends State<AddPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-
+                  final lang = Localizations.localeOf(context).languageCode;
 
                   final user = FirebaseAuth.instance.currentUser;
 
