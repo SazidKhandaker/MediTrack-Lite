@@ -165,7 +165,7 @@ class _AddPageState extends State<AddPage> {
                     "name": nameController.text,
                     "meal": selectedMeal,
                     "time": selectedTime!.format(context),
-                    "date": selectedDate,
+                    "date":  selectedDate ?? formatDate(DateTime.now()),
                     "createdAt": Timestamp.now(),
                   });
 

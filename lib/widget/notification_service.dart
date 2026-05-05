@@ -93,7 +93,7 @@ class NotificationService {
           enableVibration: true,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
       UILocalNotificationDateInterpretation.absoluteTime,
     );
@@ -157,7 +157,10 @@ class NotificationService {
 
     for (var doc in snapshot.docs) {
       final data = doc.data();
-
+      if (data['time'] == null || data['date'] == null) {
+        print("⚠️ Skipped invalid data: $data");
+        continue;
+      }
       final time = _parseTime(data['time']);
 
       await NotificationService.scheduleMedicine(
