@@ -477,13 +477,25 @@ class _LoginPageState extends State<LoginPage>
   }
 
   Widget _fbBtn(String lang) {
-    return _socialButton(
-      text: lang == "bn"
-          ? "ফেসবুক দিয়ে চালান"
-          : "Continue with Facebook",
-      bgColor: const Color(0xFF1877F2),
-      textColor: Colors.white,
-      icon: const Icon(Icons.facebook, color: Colors.white),
+    return InkWell(
+      onTap: (){
+        showSnack(
+
+            lang == "bn"
+                ? "দুঃখিত, Facebook লগইন এখনো চালু হয়নি 🚧"
+                : "Sorry, Facebook login is under development 🚧",
+          color: Colors.deepOrange,
+
+        );
+      },
+      child: _socialButton(
+        text: lang == "bn"
+            ? "ফেসবুক দিয়ে চালান"
+            : "Continue with Facebook",
+        bgColor: const Color(0xFF1877F2),
+        textColor: Colors.white,
+        icon: const Icon(Icons.facebook, color: Colors.white),
+      ),
     );
   }
 
