@@ -153,8 +153,50 @@ class _AddPageState extends State<AddPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
+
                   final lang = Localizations.localeOf(context).languageCode;
 
+                  // 🔴 VALIDATION
+                  if (nameController.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          lang == "bn"
+                              ? "ওষুধের নাম লিখুন ❗"
+                              : "Enter medicine name ❗",
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (selectedTime == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          lang == "bn"
+                              ? "সময় নির্বাচন করুন ⏰"
+                              : "Select time ⏰",
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (selectedDate == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          lang == "bn"
+                              ? "তারিখ নির্বাচন করুন 📅"
+                              : "Select date 📅",
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+
+                  // ✅ SAVE DATA
                   final user = FirebaseAuth.instance.currentUser;
 
                   await FirebaseFirestore.instance
@@ -162,24 +204,30 @@ class _AddPageState extends State<AddPage> {
                       .doc(user!.uid)
                       .collection('medicines')
                       .add({
-                    "name": nameController.text,
+                    "name": nameController.text.trim(),
                     "meal": selectedMeal,
-                    "time": selectedTime!.format(context),
-                    "date":  selectedDate ?? formatDate(DateTime.now()),
+                    "time": "${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}",
+                    "date": selectedDate,
                     "createdAt": Timestamp.now(),
                   });
 
-                  // 🔥 ADD THIS BLOCK
+                  // 🔥 NOTIFICATION
                   final prefs = await SharedPreferences.getInstance();
                   bool isOn = prefs.getBool('notification') ?? false;
 
                   if (isOn) {
                     await NotificationService.cancelAll();
-                    await NotificationService.scheduleAllFromDB(); // 🔥 or call your function
+                    await NotificationService.scheduleAllFromDB();
                   }
 
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Medicine Saved")),
+                    SnackBar(
+                      content: Text(
+                        lang == "bn"
+                            ? "ওষুধ সফলভাবে সংরক্ষণ হয়েছে ✅"
+                            : "Medicine saved successfully ✅",
+                      ),
+                    ),
                   );
 
                   Navigator.pop(context);
