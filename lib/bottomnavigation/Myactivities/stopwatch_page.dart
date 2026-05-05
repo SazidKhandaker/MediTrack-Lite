@@ -20,7 +20,7 @@ class SmartActivityPage extends StatefulWidget {
 }
 enum ActivityType { running, walking, jogging }
 
-ActivityType selectedActivity = ActivityType.running;
+ActivityType selectedActivity = ActivityType.walking;
 
 class _SmartActivityPageState extends State<SmartActivityPage> {
 
